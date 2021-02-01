@@ -1,4 +1,4 @@
-# ESD3D : ThreeJS
+# ES3D : ThreeJS
 
 A 3D exploration of ESD (École Supérieure du Digital - ESD Paris), using ThreeJS.
 
