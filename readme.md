@@ -5,6 +5,7 @@ A 3D exploration of ESD (École Supérieure du Digital - ESD Paris), using Three
 
 ## Setup
 Download [Node.js](https://nodejs.org/en/download/).
+Download [Git](https://git-scm.com/downloads).
 Run this followed commands:
 
 ``` bash
