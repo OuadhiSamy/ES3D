@@ -1,9 +1,6 @@
-
-//Code JS
 import './style.css'
 import * as THREE from 'three'
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js'
-import gsap from 'gsap'
 
 let camera, scene, renderer, controls;
 
@@ -22,9 +19,6 @@ const velocity = new THREE.Vector3();
 const direction = new THREE.Vector3();
 const vertex = new THREE.Vector3();
 const color = new THREE.Color();
-
-init();
-animate();
 
 function init() {
 
@@ -280,5 +274,6 @@ function animate() {
     prevTime = time;
 
     renderer.render( scene, camera );
-
 }
+
+export {init, animate}
