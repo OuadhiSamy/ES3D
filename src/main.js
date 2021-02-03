@@ -70,7 +70,7 @@ directionalLight.shadow.camera.bottom = - 7
 directionalLight.position.set(5, 5, 5)
 scene.add(directionalLight)
 
-gui.add(ambientLight, 'intensity', 0, 1, 0.001).name("Ambient intensity")
+gui.add(ambientLight, 'intensity', 0, 1, 0.001).name("Global intensity")
 gui.add(directionalLight, 'intensity', 0, 1, 0.001).name("DirectionalLight intensity")
 
 
