@@ -56,7 +56,7 @@ const textureLoader = new THREE.TextureLoader()
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.215)
 scene.add(ambientLight)
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6)
@@ -69,6 +69,9 @@ directionalLight.shadow.camera.right = 7
 directionalLight.shadow.camera.bottom = - 7
 directionalLight.position.set(5, 5, 5)
 scene.add(directionalLight)
+
+gui.add(ambientLight, 'intensity', 0, 1, 0.001).name("Ambient intensity")
+gui.add(directionalLight, 'intensity', 0, 1, 0.001).name("DirectionalLight intensity")
 
 
 
