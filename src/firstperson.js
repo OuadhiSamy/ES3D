@@ -282,6 +282,3 @@ function animate() {
     renderer.render( scene, camera );
 
 }
-
-
-export default init()

@@ -5,13 +5,13 @@ body {
     overflow: hidden;
 }
 
-/* .webgl {
+.webgl {
     position: fixed;
     top: 0;
     left: 0;
     outline: none;
 }
- */
+
 #blocker {
     position: absolute;
     width: 100%;
