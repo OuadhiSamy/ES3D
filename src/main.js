@@ -1,6 +1,7 @@
 import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as dat from 'dat.gui'
 import gsap from 'gsap'
 
@@ -19,31 +20,57 @@ const scene = new THREE.Scene()
 /**
  * Loaders
  */
+// Models
+const gltfLoader = new GLTFLoader()
+gltfLoader.load(
+    '/models/structure.glb',
+    (gltf) => {
+        console.log('success')
+        console.log(gltf)
+        gltf.scene.scale.set(1, 1, 1);
+        const box = new THREE.Box3().setFromObject(gltf.scene);
+        const center = box.getCenter(new THREE.Vector3());
+        gltf.scene.position.x += (gltf.scene.position.x - center.x);
+        gltf.scene.position.y += (gltf.scene.position.y - center.y);
+        gltf.scene.position.z += (gltf.scene.position.z - center.z);
+        scene.add(gltf.scene)
+    }
+)
+// 
+// Textures
 const textureLoader = new THREE.TextureLoader()
-const matcapTexture = textureLoader.load('/textures/matcap.png')
-const backedShadow = textureLoader.load('/textures/bakedShadow.jpg')
+
+
+// /**
+//  * Floor
+//  */
+// const floor = new THREE.Mesh(
+//     new THREE.PlaneGeometry(10, 10),
+//     new THREE.MeshBasicMaterial({
+//         color: 0x757575,
+//     })
+// )
+// floor.rotation.x = - Math.PI * 0.5
+// scene.add(floor)
 
 /**
- * Floor
+ * Lights
  */
-const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshBasicMaterial({
-        map: backedShadow,
-    })
-)
-floor.rotation.x = - Math.PI * 0.5
-scene.add(floor)
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
+scene.add(ambientLight)
 
-/**
- * Simple object
- */
-const sphere = new THREE.Mesh(
-    new THREE.SphereBufferGeometry(1, 32, 32),
-    new THREE.MeshMatcapMaterial({matcap: matcapTexture})
-)
-sphere.position.set(0, 0.98, 0)
-scene.add(sphere)
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6)
+directionalLight.castShadow = true
+directionalLight.shadow.mapSize.set(1024, 1024)
+directionalLight.shadow.camera.far = 15
+directionalLight.shadow.camera.left = - 7
+directionalLight.shadow.camera.top = 7
+directionalLight.shadow.camera.right = 7
+directionalLight.shadow.camera.bottom = - 7
+directionalLight.position.set(5, 5, 5)
+scene.add(directionalLight)
+
+
 
 /**
  * Resize canvas
@@ -53,8 +80,7 @@ const sizes = {
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
+window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
@@ -72,8 +98,8 @@ window.addEventListener('resize', () =>
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(4, 4, 10)
+const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 1000000)
+camera.position.set(45, 45, 75)
 scene.add(camera)
 
 // Controls
@@ -98,8 +124,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 
-const tick = () =>
-{
+const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
     // Update controls
