@@ -21,37 +21,47 @@ const scene = new THREE.Scene()
  * Loaders
  */
 // Models
-const gltfLoader = new GLTFLoader()
-gltfLoader.load(
-    '/models/structure.glb',
-    (gltf) => {
-        console.log('success')
-        console.log(gltf)
-        gltf.scene.scale.set(1, 1, 1);
-        const box = new THREE.Box3().setFromObject(gltf.scene);
-        const center = box.getCenter(new THREE.Vector3());
-        gltf.scene.position.x += (gltf.scene.position.x - center.x);
-        gltf.scene.position.y += (gltf.scene.position.y - center.y);
-        gltf.scene.position.z += (gltf.scene.position.z - center.z);
-        scene.add(gltf.scene)
-    }
-)
+// const gltfLoader = new GLTFLoader()
+// gltfLoader.load(
+//     '/models/structure.glb',
+//     (gltf) => {
+//         console.log('success')
+//         console.log(gltf)
+//         gltf.scene.scale.set(1, 1, 1);
+//         const box = new THREE.Box3().setFromObject(gltf.scene);
+//         const center = box.getCenter(new THREE.Vector3());
+//         gltf.scene.position.x += (gltf.scene.position.x - center.x);
+//         gltf.scene.position.y += (gltf.scene.position.y - center.y);
+//         gltf.scene.position.z += (gltf.scene.position.z - center.z);
+//         scene.add(gltf.scene)
+//     }
+// )
 // 
 // Textures
 const textureLoader = new THREE.TextureLoader()
 
 
-// /**
-//  * Floor
-//  */
-// const floor = new THREE.Mesh(
-//     new THREE.PlaneGeometry(10, 10),
-//     new THREE.MeshBasicMaterial({
-//         color: 0x757575,
-//     })
-// )
-// floor.rotation.x = - Math.PI * 0.5
-// scene.add(floor)
+/**
+ * Floor
+ */
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(10, 10),
+    new THREE.MeshBasicMaterial({
+        color: 0xededed,
+    })
+)
+floor.rotation.x = - Math.PI * 0.5
+scene.add(floor)
+
+/**
+ * Objet
+ */
+const character = new THREE.Mesh(
+    new THREE.BoxBufferGeometry(0.5, 1.25, 0.5),
+    new THREE.MeshPhysicalMaterial({ color: "red" })
+)
+character.position.y = character.scale.y * 0.5
+scene.add(character)
 
 /**
  * Lights
@@ -102,7 +112,7 @@ window.addEventListener('resize', () => {
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(50, sizes.width / sizes.height, 0.1, 1000000)
-camera.position.set(45, 45, 75)
+camera.position.set(0, 4, 6)
 scene.add(camera)
 
 // Controls
@@ -122,16 +132,107 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+
+/**
+ * Third Perso Controls
+ */
+// Setup events listeners
+let keys = {
+    forward: false,
+    backward: false,
+    left: false,
+    right: false,
+    space: false,
+    shift: false,
+}
+document.addEventListener('keydown', (e) => _onKeyDown(e), false);
+document.addEventListener('keyup', (e) => _onKeyUp(e), false);
+
+
+function _onKeyDown(event) {
+    switch (event.keyCode) {
+        case 90: // z
+            keys.forward = true;
+            break;
+        case 81: // q
+            keys.left = true;
+            break;
+        case 83: // s
+            keys.backward = true;
+            break;
+        case 68: // d
+            keys.right = true;
+            break;
+        case 32: // SPACE
+            keys.space = true;
+            break;
+        case 16: // SHIFT
+            keys.shift = true;
+            break;
+    }
+}
+
+function _onKeyUp(event) {
+    switch (event.keyCode) {
+        case 90: // z
+            keys.forward = false;
+            break;
+        case 81: // q
+            keys.left = false;
+            break;
+        case 83: // s
+            keys.backward = false;
+            break;
+        case 68: // d
+            keys.right = false;
+            break;
+        case 32: // SPACE
+            keys.space = false;
+            break;
+        case 16: // SHIFT
+            keys.shift = false;
+            break;
+    }
+}
+
+function Update(timeElapsed) {
+    if (keys.forward) {
+        character.position.z -= timeElapsed * 0.01
+        console.log("forward")
+    }
+
+    if (keys.backward) {
+        character.position.z += timeElapsed * 0.01
+        console.log("backward")
+    }
+
+    if (keys.left) {
+        character.position.x -= timeElapsed * 0.01
+        console.log("left")
+    }
+
+    if (keys.right) {
+        character.position.x += timeElapsed * 0.01
+        console.log("right")
+    }
+}
+
+
 /**
  * Animate
  */
 const clock = new THREE.Clock()
 
-const tick = () => {
+function tick() {
     const elapsedTime = clock.getElapsedTime()
 
     // Update controls
     controls.update()
+
+    // Update character
+    Update(elapsedTime)
+
+    // console.log(keys.forward);
 
     // Render
     renderer.render(scene, camera)
