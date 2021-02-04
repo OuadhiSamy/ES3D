@@ -4,25 +4,22 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as dat from 'dat.gui'
 import gsap from 'gsap'
-import {init, animate} from './firstPersonController.js'
+import { initFirstPerson, animate, camera, scene, renderer, controls } from './firstPersonController.js'
 
-const firstperson = true;
-const orbitcontrol = false;
 
-/**
- * Base
- */
+const viewMode = {
+    firstPerson: true
+}
+
 // Debug
 const gui = new dat.GUI()
 
-start()
+function initOrbitControl() {
+    if (!viewMode.firstPerson) {
 
-function start(){
-    if(orbitcontrol==true){
-        
         //HTML
         document.body.innerHTML = document.body.innerHTML + '<canvas class="webgl"></canvas>'
-    
+
         // Canvas
         const canvas = document.querySelector('canvas.webgl')
 
@@ -35,7 +32,7 @@ function start(){
         // Models
         const gltfLoader = new GLTFLoader()
         gltfLoader.load(
-            '/models/structure.glb',
+            '/models/TEST.glb',
             (gltf) => {
                 console.log(gltf)
                 gltf.scene.scale.set(1, 1, 1);
@@ -45,24 +42,13 @@ function start(){
                 gltf.scene.position.y += (gltf.scene.position.y - center.y);
                 gltf.scene.position.z += (gltf.scene.position.z - center.z);
                 scene.add(gltf.scene)
+                console.log(gltf.scene.children[11])
+                for (let i = 0; i < gltf.scene.children.length; i++) {
+                    gltf.scene.children[i].material = new THREE.MeshBasicMaterial({color: "#ff0000"})
+                    
+                }
             }
         )
-        // 
-        // Textures
-        const textureLoader = new THREE.TextureLoader()
-
-
-        // /**
-        //  * Floor
-        //  */
-        // const floor = new THREE.Mesh(
-        //     new THREE.PlaneGeometry(10, 10),
-        //     new THREE.MeshBasicMaterial({
-        //         color: 0x757575,
-        //     })
-        // )
-        // floor.rotation.x = - Math.PI * 0.5
-        // scene.add(floor)
 
         /**
          * Lights
@@ -70,7 +56,7 @@ function start(){
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.215)
         scene.add(ambientLight)
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6)
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
         directionalLight.castShadow = true
         directionalLight.shadow.mapSize.set(1024, 1024)
         directionalLight.shadow.camera.far = 15
@@ -152,13 +138,23 @@ function start(){
         }
 
         tick()
-        console.log('orbit')
     }
-    else if(firstperson==true){
-        //HTML
-        document.body.innerHTML = document.body.innerHTML + '<div id="blocker"><div id="instructions"><span style="font-size:36px">Click to play</span><br /><br />Move: ZQSD<br/>Jump: SPACE<br/>Look: MOUSE</div></div>'
-        init()
-        animate()
-        console.log('fps')
-    }
+    
 }
+
+function exitFPSMode() {
+
+}
+
+// Render
+function render() {
+
+    if(viewMode.firstPerson == true) {
+        document.body.innerHTML = document.body.innerHTML + '<div id="blocker"><div id="instructions"><span style="font-size:36px">Click to play</span><br /><br />Move: ZQSD<br/>Jump: SPACE<br/>Look: MOUSE</div></div>'
+        initFirstPerson()
+    }
+    else 
+        initOrbitControl()
+}
+
+render();
