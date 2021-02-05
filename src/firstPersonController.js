@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as dat from 'dat.gui'
+import { RedFormat } from 'three'
 
 let camera, scene, renderer, controls;
 
@@ -21,18 +22,86 @@ const direction = new THREE.Vector3();
 const vertex = new THREE.Vector3();
 const color = new THREE.Color();
 
+let mixer = null
+let gltf = null
+
+//bouncingSphere
+const bouncingSphere = new THREE.Mesh(
+    new THREE.SphereGeometry( 2, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xA7A1A9, roughness:0.4, metalness: 0.5}))
+bouncingSphere.castShadow = true
+
+//CenterToCamera
+var positionScreenSpace = new THREE.Vector3();
+var threshold = 0.1;
+
+//Sphere
+const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry( 2, 16, 16),
+    new THREE.MeshStandardMaterial({ color: 0xA7A1A9, roughness:0.4, metalness: 0.5}))
+sphere.castShadow = true
+sphere.position.y = 5;
+var test
+
+//Reticle
+// var cursor
+// var CursorSize = 500
+
+// var crosshair = new THREE.Mesh( new THREE.PlaneGeometry( 5, 5 ), new THREE.MeshStandardMaterial({
+//     color: 0x9A86A1,
+// }) );
+// 			// place it in the center
+// var crosshairPercentX = 50;
+// var crosshairPercentY = 50;
+// var crosshairPositionX = (crosshairPercentX / 100) * 2 - 1;
+// var crosshairPositionY = (crosshairPercentY / 100) * 2 - 1;
+
 function init() {
 
+    // Debug
+
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-    camera.position.y = 10;
+    camera.position.y = 15;
+
+    // var reticle = new THREE.Mesh(
+    //     new THREE.RingBufferGeometry( 0.85 * CursorSize, CursorSize, 32),
+    //     new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide })
+    //   );    
+    // reticle.position.z = 2000;
+    // reticle.lookAt(camera.position)
+    // camera.add(reticle);
+
+    // crosshair.position.x = crosshairPositionX * camera.aspect;
+    // crosshair.position.y = crosshairPositionY;
+
+    // crosshair.position.z = -0.3;
+    // crosshair.rotation.y = 1.6;
+
+    // camera.add( crosshair )
+
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xffffff );
-    scene.fog = new THREE.Fog( 0xffffff, 50, 1000 );
+    scene.fog = new THREE.Fog( 0xffffff, 30, 1000 );
+    // scene.add ( crosshair )
 
-    const light = new THREE.HemisphereLight( 0xeeeeff, 0x777788, 0.75 );
-    light.position.set( 0.5, 1, 0.75 );
+    scene.add( sphere );
+
+    //texture
+    const material = new THREE.MeshStandardMaterial()
+    material.roughness = 0.7
+
+    const light = new THREE.AmbientLight( 0x404040, 2 ); // soft white light
     scene.add( light );
+
+    const pointLight = new THREE.PointLight(0xffffff, 2, 100)
+    pointLight.position.set(25,50,15);
+    scene.add(pointLight);
+
+    pointLight.castShadow = true
+
+    pointLight.shadow.mapSize.width = 1024
+    pointLight.shadow.mapSize.height = 1024
 
     controls = new PointerLockControls( camera, document.body );
 
@@ -61,6 +130,41 @@ function init() {
 
     scene.add( controls.getObject() );
 
+   
+    const gltfLoader = new GLTFLoader()
+
+    // Models
+    gltfLoader.load(
+        '/models/structure.glb',
+        (gltf) => {
+        console.log(gltf)
+            gltf.scene.scale.set(13, 13, 13);
+            const box = new THREE.Box3().setFromObject(gltf.scene);
+            const center = box.getCenter(new THREE.Vector3());
+            gltf.scene.position.x += (gltf.scene.position.x - center.x);
+            gltf.scene.position.y += (gltf.scene.position.y-3.5);
+        gltf.scene.position.z += (gltf.scene.position.z - center.z);
+        scene.add(gltf.scene)
+        }
+    )
+
+    // Renard
+    gltfLoader.load(
+        '/models/Fox/glTF/Fox.gltf',
+        (gltf) =>
+        {
+            gltf.scene.scale.set(0.15, 0.15, 0.15)
+            scene.add(gltf.scene)
+            gltf.scene.position.z += (gltf.scene.position.z - 15);
+            mixer = new THREE.AnimationMixer(gltf.scene)
+            const action = mixer.clipAction(gltf.animations[0])
+            action.play()
+        }
+    )
+
+    // const pointLightCameraHelper = new THREE.CameraHelper(pointLight.shadow.camera)
+    // scene.add(pointLightCameraHelper)
+
     const onKeyDown = function ( event ) {
 
         switch ( event.code ) {
@@ -86,12 +190,11 @@ function init() {
                 break;
 
             case 'Space':
-                if ( canJump === true ) velocity.y += 300;
+                if ( canJump === true ) velocity.y += 200;
                 canJump = false;
                 break;
 
         }
-
     };
 
     const onKeyUp = function ( event ) {
@@ -119,70 +222,40 @@ function init() {
                 break;
 
         }
-
     };
 
     document.addEventListener( 'keydown', onKeyDown );
     document.addEventListener( 'keyup', onKeyUp );
-
     raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
 
+
+     //  * Floor
+        //  */
+         const floor = new THREE.Mesh(
+             new THREE.PlaneGeometry(2000, 2000, 100, 100),
+             new THREE.MeshStandardMaterial({
+                 color: 0x9A86A1,
+             })
+         )
+         floor.rotation.x = - Math.PI * 0.5
+         floor.position.y = 0
+         floor.receiveShadow = true
+         scene.add(floor)
+
+
+
+         
     
-     // Models
-     const gltfLoader = new GLTFLoader()
-     gltfLoader.load(
-         '/models/structure.glb',
-         (gltf) => {
-             console.log(gltf)
-             gltf.scene.scale.set(30, 30, 30);
-             const box = new THREE.Box3().setFromObject(gltf.scene);
-             const center = box.getCenter(new THREE.Vector3());
-             gltf.scene.position.x += (gltf.scene.position.x - center.x);
-             gltf.scene.position.y += (gltf.scene.position.y - center.y);
-             gltf.scene.position.z += (gltf.scene.position.z - center.z);
-             scene.add(gltf.scene)
-         }
-     )
-    // floor
+    console.log(bouncingSphere.geometry.radius)
+    bouncingSphere.position.y = 2 //+ (bouncingSphere.geometry.parameters.height)
+    bouncingSphere.position.x += 10
+    scene.add(bouncingSphere)
 
-    let floorGeometry = new THREE.PlaneGeometry( 2000, 2000, 100, 100 );
-    floorGeometry.rotateX( - Math.PI / 2 );
-
-    // vertex displacement
-
-    let position = floorGeometry.attributes.position;
-
-    // for ( let i = 0, l = position.count; i < l; i ++ ) {
-    //     //Texture sol
-    //     vertex.fromBufferAttribute( position, i );
-
-    //     vertex.x += Math.random() * 20 - 10;
-    //     vertex.y += Math.random() * 1;
-    //     vertex.z += Math.random() * 20 - 10;
-
-    //     position.setXYZ( i, vertex.x, vertex.y, vertex.z );
-
-    // }
-
-    floorGeometry = floorGeometry.toNonIndexed(); // ensure each face has unique vertices
-
-    position = floorGeometry.attributes.position;
-    const colorsFloor = [];
-
-/*     for ( let i = 0, l = position.count; i < l; i ++ ) {
-        //Contrôle couleur des sols
-        color.setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
-        colorsFloor.push( color.r, color.g, color.b );
-
-    }
-
-    floorGeometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colorsFloor, 3 ) );
-*/
-    const floorMaterial = new THREE.MeshBasicMaterial( { vertexColors: true } );
-
-    const floor = new THREE.Mesh( floorGeometry, floorMaterial );
-    scene.add( floor );
-
+/**
+ * Raycaster
+ */
+    //const raycaster = new THREE.Raycaster()
+    
     // objects
 
     // const boxGeometry = new THREE.BoxGeometry( 20, 20, 20 ).toNonIndexed();
@@ -216,14 +289,18 @@ function init() {
 
     //
 
+    //Shadows
     renderer = new THREE.WebGLRenderer( { antialias: true } );
+    renderer.shadowMap.enabled = true
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
 
-    //
-
     window.addEventListener( 'resize', onWindowResize );
+    
+    
+
+
 
 }
 
@@ -236,13 +313,128 @@ function onWindowResize() {
 
 }
 
+
+// window.addEventListener('click', () =>
+// {
+//         //Check Center Screen
+//         positionScreenSpace.copy(sphere.position).project(camera);
+//         positionScreenSpace.setZ(0);
+//         var isCloseToCenter = positionScreenSpace.length() < threshold;
+//     if((camera.position.x-sphere.position.x)<8 && (camera.position.z-sphere.position.z)<8){   
+//         //console.log('proche')
+//         //If character targetting object
+//         if(isCloseToCenter){
+//             sphere.material.color.set('#ff0000')
+//         }
+//         else{
+//             sphere.material.color.set('#0000ff')
+//         }
+//     }
+//     else{
+//         //console.log('loin')
+//         sphere.material.color.set('#0000ff')
+//     }
+// })
+
+let currentIntersect = null
+
+var step=0;
+
+function onDocumentMouseDown( event ) {
+
+    event.preventDefault();
+
+    if(test == 1)
+    {   
+        /*Charger un renard quand je clique*/
+        // const gltfLoader = new GLTFLoader()
+        // gltfLoader.load(
+        //     'models/Fox/glTF/Fox.gltf',
+        //     (gltf) =>
+        //     {
+        //         gltf.scene.scale.set(0.25, 0.25, 0.25)
+        //         scene.add(gltf.scene)
+        //     }
+        // )
+        
+        console.log('c bon')
+    }
+    else if(test == 2)
+    {
+        console.log('echec')
+    }
+
+
+    // mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
+    // mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
+
+    // raycaster.setFromCamera( mouse, camera );
+
+    // var intersects = raycaster.intersectObjects( objects ); 
+
+    // if ( intersects.length > 0 ) {
+
+    //     intersects[0].object.callback();
+
+    // }
+
+}
+
 function animate() {
 
+    window.addEventListener('click', onDocumentMouseDown);
+    test = 0
+    //Bouncing ball
+    step+=0.04;
+    bouncingSphere.position.x = 20+( 10*(Math.cos(step)));
+    bouncingSphere.position.y = 2 +( 10*Math.abs(Math.sin(step)));
+
+    //Check Center Screen
+    positionScreenSpace.copy(sphere.position).project(camera);
+    positionScreenSpace.setZ(0);
+    var isCloseToCenter = positionScreenSpace.length() < threshold;
+
+    //console.log(positionScreenSpace.x.toFixed(2) + ", " + positionScreenSpace.y.toFixed(2))
+
+
+    //If character close to object
+    // if((camera.position.x-bouncingSphere.position.x)<8 && (camera.position.z-bouncingSphere.position.z)<8){   
+    //     console.log('proche')
+    //     //If character targetting object
+    //     if(isCloseToCenter){
+    //         bouncingSphere.material.color.set('#ff0000')
+    //    }
+    // }
+    // else{
+    //     console.log('loin')
+    //     bouncingSphere.material.color.set('#0000ff')
+    // }
+
+    //If character close to object
+    if((camera.position.x-sphere.position.x)<8 && (camera.position.z-sphere.position.z)<8){   
+        //console.log('proche')
+        //If character targetting object
+        if(isCloseToCenter){
+            sphere.material.color.set('#ff0000')
+            test = 1
+        }
+        else{
+            sphere.material.color.set('#0000ff')
+            test = 2
+        }
+    }
+    else{
+        //console.log('loin')
+        sphere.material.color.set('#0000ff')
+        test = 2
+    }
     requestAnimationFrame( animate );
+    // scene.add(new THREE.ArrowHelper( raycaster.ray.direction, raycaster.ray.origin, 100, Math.random() * 0xffffff, 0.5, 0.5 ))
 
     const time = performance.now();
 
     if ( controls.isLocked === true ) {
+
 
         raycaster.ray.origin.copy( controls.getObject().position );
         raycaster.ray.origin.y -= 10;
@@ -253,17 +445,23 @@ function animate() {
 
         const delta = ( time - prevTime ) / 1000;
 
+         // Model animation
+        if(mixer)
+        {
+        mixer.update(delta)
+        }
+
         velocity.x -= velocity.x * 5.0 * delta;
         velocity.z -= velocity.z * 5.0 * delta;
 
-        velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+        velocity.y -= 9.8 * 75.0 * delta; // 100.0 = mass
 
         direction.z = Number( moveForward ) - Number( moveBackward );
         direction.x = Number( moveRight ) - Number( moveLeft );
         direction.normalize(); // this ensures consistent movements in all directions
 
-        if ( moveForward || moveBackward ) velocity.z -= direction.z * 300.0 * delta;
-        if ( moveLeft || moveRight ) velocity.x -= direction.x * 300.0 * delta;
+        if ( moveForward || moveBackward ) velocity.z -= direction.z * 175.0 * delta;
+        if ( moveLeft || moveRight ) velocity.x -= direction.x * 175.0 * delta;
 
         if ( onObject === true ) {
 
@@ -277,10 +475,10 @@ function animate() {
 
         controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
-        if ( controls.getObject().position.y < 10 ) {
+        if ( controls.getObject().position.y < 15 ) {
 
             velocity.y = 0;
-            controls.getObject().position.y = 10;
+            controls.getObject().position.y = 15;
 
             canJump = true;
 
