@@ -157,6 +157,7 @@ function start(){
     else if(firstperson==true){
         //HTML
         document.body.innerHTML = document.body.innerHTML + '<div id="blocker"><div id="instructions"><span style="font-size:36px">Click to play</span><br /><br />Move: ZQSD<br/>Jump: SPACE<br/>Look: MOUSE</div></div>'
+        document.body.innerHTML = document.body.innerHTML + '<div class="gui"><div class="hud-layer"><div class="crosshair"><img src="/images/crosshair.svg" class="image"></div></div></div>'
         init()
         animate()
         console.log('fps')

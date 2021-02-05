@@ -47,3 +47,38 @@ body {
 
     cursor: pointer;
 }
+
+.gui {
+    color: #e9e9f5;
+    font-family: "Roboto Condensed", sans-serif;
+    font-weight: normal;
+    font-size: 12px;
+    display: grid;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    place-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: none;
+}
+
+.hud-layer {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    display: grid;
+}
+
+.hud-layer .crosshair{
+    display: grid;
+    position: absolute;
+    align-self: center;
+    justify-self: center;
+}
+
+.hud-layer .crosshair img {
+    display: grid;
+    width: 24px;
+}
