@@ -8,7 +8,7 @@ let moveLeft = false;
 let moveRight = false;
 let canJump = false;
 
-function pointLock(controls,time, prevTime, velocity, direction, moveBackward,moveForward, moveLeft,moveRight, canJump){
+function pointLock(controls,time, prevTime, velocity, direction, moveBackward, moveForward, moveLeft,moveRight, canJump){
     
     const raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 )
 
@@ -46,7 +46,6 @@ function pointLock(controls,time, prevTime, velocity, direction, moveBackward,mo
     controls.getObject().position.y += ( velocity.y * delta ); // new behavior
 
     if ( controls.getObject().position.y < 15 ) {
-
         velocity.y = 0;
         controls.getObject().position.y = 15;
 
