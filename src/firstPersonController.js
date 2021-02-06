@@ -37,13 +37,14 @@ var threshold = 0.2;
 
 //Sphere
 const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry( 2, 16, 16),
+    new THREE.SphereGeometry( 6, 16, 16),
     new THREE.MeshStandardMaterial({ color: 0xA7A1A9, roughness:0.4, metalness: 0.5}))
 sphere.castShadow = true
 sphere.position.y = 5;
 var test
 
 var boundingBox = new THREE.Box3().setFromObject(sphere);
+var collision
 
 // Text overlay
 var name = 'Salut';
@@ -152,10 +153,10 @@ function init() {
             action.play()
         }
     )
-
-    sphere.geometry.computeBoundingBox()
     //Collision management
-    var collision = boundingBox.containsPoint( camera.position );
+    sphere.geometry.computeBoundingBox()
+
+    console.log("Position : " + camera.position)
 
     const onKeyDown = function ( event ) {
 
@@ -285,6 +286,10 @@ function init() {
 
     //
 
+    const box = new THREE.BoxHelper( sphere, 0xffff00 );
+    scene.add( box );
+
+
     //Shadows
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.shadowMap.enabled = true
@@ -335,15 +340,18 @@ function animate() {
     window.addEventListener('click', onDocumentMouseDown);
     test = 0
     //Bouncing ball
-    step+=0.04;
-    bouncingSphere.position.x = 20+( 10*(Math.cos(step)));
-    bouncingSphere.position.y = 2 +( 10*Math.abs(Math.sin(step)));
+    // step+=0.04;
+    // bouncingSphere.position.x = 20+( 10*(Math.cos(step)));
+    // bouncingSphere.position.y = 2 +( 10*Math.abs(Math.sin(step)));
 
     //Check Center Screen
     positionScreenSpace.copy(sphere.position).project(camera);
     positionScreenSpace.setZ(0);
     var isCloseToCenter = positionScreenSpace.length() < threshold;
 
+    var collision = boundingBox.containsPoint( camera.position.x );
+    //boundingBox.getParameter
+    console.log(collision)
     //console.log(positionScreenSpace.x.toFixed(2) + ", " + positionScreenSpace.y.toFixed(2))
 
     // Text overlay
@@ -361,6 +369,7 @@ function animate() {
     //     console.log('loin')
     //     bouncingSphere.material.color.set('#0000ff')
     // }
+
 
     //sphere.copy( sphere.geometry.boundingBox ).applyMatrix4( boundingBox.matrixWorld );
 
