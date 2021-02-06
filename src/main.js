@@ -21,9 +21,6 @@ const direction = new THREE.Vector3();
 const vertex = new THREE.Vector3();
 const color = new THREE.Color();
 
-let mixer = null
-let gltf = null
-
 //bouncingSphere
 const bouncingSphere = new THREE.Mesh(
     new THREE.SphereGeometry( 2, 16, 16),
@@ -39,50 +36,18 @@ const sphere = new THREE.Mesh(
     new THREE.SphereGeometry( 2, 16, 16),
     new THREE.MeshStandardMaterial({ color: 0xA7A1A9, roughness:0.4, metalness: 0.5}))
 sphere.castShadow = true
-sphere.position.y = 5;
-var test
-
-//Reticle
-// var cursor
-// var CursorSize = 500
-
-// var crosshair = new THREE.Mesh( new THREE.PlaneGeometry( 5, 5 ), new THREE.MeshStandardMaterial({
-//     color: 0x9A86A1,
-// }) );
-// 			// place it in the center
-// var crosshairPercentX = 50;
-// var crosshairPercentY = 50;
-// var crosshairPositionX = (crosshairPercentX / 100) * 2 - 1;
-// var crosshairPositionY = (crosshairPercentY / 100) * 2 - 1;
+sphere.position.y = 2;
+let test
 
 function init() {
 
-    // Debug
 
     camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
     camera.position.y = 15;
 
-    // var reticle = new THREE.Mesh(
-    //     new THREE.RingBufferGeometry( 0.85 * CursorSize, CursorSize, 32),
-    //     new THREE.MeshBasicMaterial( {color: 0xffffff, side: THREE.DoubleSide })
-    //   );    
-    // reticle.position.z = 2000;
-    // reticle.lookAt(camera.position)
-    // camera.add(reticle);
-
-    // crosshair.position.x = crosshairPositionX * camera.aspect;
-    // crosshair.position.y = crosshairPositionY;
-
-    // crosshair.position.z = -0.3;
-    // crosshair.rotation.y = 1.6;
-
-    // camera.add( crosshair )
-
-
     scene = new THREE.Scene();
     scene.background = new THREE.Color( 0xffffff );
     scene.fog = new THREE.Fog( 0xffffff, 30, 1000 );
-    // scene.add ( crosshair )
 
     scene.add( sphere );
 
@@ -136,14 +101,14 @@ function init() {
 
     // Models
     gltfLoader.load(
-        '/models/structure.glb',
+        '/models/structure_v3.glb',
         (gltf) => {
         console.log(gltf)
             gltf.scene.scale.set(13, 13, 13);
             const box = new THREE.Box3().setFromObject(gltf.scene);
             const center = box.getCenter(new THREE.Vector3());
             gltf.scene.position.x += (gltf.scene.position.x - center.x);
-            gltf.scene.position.y += (gltf.scene.position.y-3.5);
+            gltf.scene.position.y = 0;
         gltf.scene.position.z += (gltf.scene.position.z - center.z);
         scene.add(gltf.scene)
         }
@@ -221,53 +186,16 @@ function init() {
              })
          )
          floor.rotation.x = - Math.PI * 0.5
-         floor.position.y = 0
+         floor.position.y = 0.05
          floor.receiveShadow = true
+         console.log(floor.position)
          scene.add(floor)
 
     
-    console.log(bouncingSphere.geometry.radius)
-    bouncingSphere.position.y = 2 //+ (bouncingSphere.geometry.parameters.height)
+    bouncingSphere.position.y = 0
     bouncingSphere.position.x += 10
     scene.add(bouncingSphere)
 
-/**
- * Raycaster
- */
-    //const raycaster = new THREE.Raycaster()
-    
-    // objects
-
-    // const boxGeometry = new THREE.BoxGeometry( 20, 20, 20 ).toNonIndexed();
-
-    // position = boxGeometry.attributes.position;
-    // const colorsBox = [];
-
-    // for ( let i = 0, l = position.count; i < l; i ++ ) {
-
-    //     color.setHSL( Math.random() * 0.3 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
-    //     colorsBox.push( color.r, color.g, color.b );
-
-    // }
-
-    // boxGeometry.setAttribute( 'color', new THREE.Float32BufferAttribute( colorsBox, 3 ) );
-
-    // for ( let i = 0; i < 500; i ++ ) {
-
-    //     const boxMaterial = new THREE.MeshPhongMaterial( { specular: 0xffffff, flatShading: true, vertexColors: true } );
-    //     boxMaterial.color.setHSL( Math.random() * 0.2 + 0.5, 0.75, Math.random() * 0.25 + 0.75 );
-
-    //     const box = new THREE.Mesh( boxGeometry, boxMaterial );
-    //     box.position.x = Math.floor( Math.random() * 20 - 10 ) * 20;
-    //     box.position.y = Math.floor( Math.random() * 20 ) * 20 + 10;
-    //     box.position.z = Math.floor( Math.random() * 20 - 10 ) * 20;
-
-    //     scene.add( box );
-    //     objects.push( box );
-
-    // }
-
-    //
 
     //Shadows
     renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -277,9 +205,6 @@ function init() {
     document.body.appendChild( renderer.domElement );
 
     window.addEventListener( 'resize', onWindowResize );
-    
-    
-
 
 
 }
@@ -288,78 +213,13 @@ function onWindowResize() {
 
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-
     renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
 
-
-// window.addEventListener('click', () =>
-// {
-//         //Check Center Screen
-//         positionScreenSpace.copy(sphere.position).project(camera);
-//         positionScreenSpace.setZ(0);
-//         var isCloseToCenter = positionScreenSpace.length() < threshold;
-//     if((camera.position.x-sphere.position.x)<8 && (camera.position.z-sphere.position.z)<8){   
-//         //console.log('proche')
-//         //If character targetting object
-//         if(isCloseToCenter){
-//             sphere.material.color.set('#ff0000')
-//         }
-//         else{
-//             sphere.material.color.set('#0000ff')
-//         }
-//     }
-//     else{
-//         //console.log('loin')
-//         sphere.material.color.set('#0000ff')
-//     }
-// })
-
 let currentIntersect = null
 
 var step=0;
-
-function onDocumentMouseDown( event ) {
-
-    console.log('this is the test: ', test);
-    event.preventDefault();
-
-    if(test == 1)
-    {   
-        /*Charger un renard quand je clique*/
-        // const gltfLoader = new GLTFLoader()
-        // gltfLoader.load(
-        //     'models/Fox/glTF/Fox.gltf',
-        //     (gltf) =>
-        //     {
-        //         gltf.scene.scale.set(0.25, 0.25, 0.25)
-        //         scene.add(gltf.scene)
-        //     }
-        // )
-        
-        console.log('c bon')
-    }
-    else if(test == 2)
-    {
-        console.log('echec')
-    }
-
-
-    // mouse.x = ( event.clientX / renderer.domElement.clientWidth ) * 2 - 1;
-    // mouse.y = - ( event.clientY / renderer.domElement.clientHeight ) * 2 + 1;
-
-    // raycaster.setFromCamera( mouse, camera );
-
-    // var intersects = raycaster.intersectObjects( objects ); 
-
-    // if ( intersects.length > 0 ) {
-
-    //     intersects[0].object.callback();
-
-    // }
-
-}
 
 function animate() {
 
@@ -374,22 +234,6 @@ function animate() {
     positionScreenSpace.copy(sphere.position).project(camera);
     positionScreenSpace.setZ(0);
     var isCloseToCenter = positionScreenSpace.length() < threshold;
-
-    //console.log(positionScreenSpace.x.toFixed(2) + ", " + positionScreenSpace.y.toFixed(2))
-
-
-    //If character close to object
-    // if((camera.position.x-bouncingSphere.position.x)<8 && (camera.position.z-bouncingSphere.position.z)<8){   
-    //     console.log('proche')
-    //     //If character targetting object
-    //     if(isCloseToCenter){
-    //         bouncingSphere.material.color.set('#ff0000')
-    //    }
-    // }
-    // else{
-    //     console.log('loin')
-    //     bouncingSphere.material.color.set('#0000ff')
-    // }
 
     //If character close to object
     if((camera.position.x-sphere.position.x)<8 && (camera.position.z-sphere.position.z)<8){   
@@ -409,16 +253,13 @@ function animate() {
         sphere.material.color.set('#0000ff')
         test = 2
     }
+
     requestAnimationFrame( animate );
-    // scene.add(new THREE.ArrowHelper( raycaster.ray.direction, raycaster.ray.origin, 100, Math.random() * 0xffffff, 0.5, 0.5 ))
 
     const time = performance.now();
 
     if ( controls.isLocked === true ) {
        pointLock(controls,time, prevTime, velocity, direction, moveBackward,moveForward, moveLeft,moveRight, canJump)
-
-       
-
     }
 
     prevTime = time;
