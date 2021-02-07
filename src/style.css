@@ -28,7 +28,7 @@ body {
 }
 
 .progress-container {
-    width: 20%;
+    width: 30%;
     flex-direction: column;
     justify-content: center;
     align-items: center;
