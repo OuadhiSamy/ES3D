@@ -5,6 +5,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as dat from 'dat.gui'
 //import gsap from 'gsap'
 
+
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { Octree } from 'three/examples/jsm/math/Octree.js';
@@ -324,16 +325,55 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 			}
 
-// 			const geometry = new THREE.PlaneGeometry( 5000, 2000, 32 );
-// const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-// const plane = new THREE.Mesh( geometry, material );
-// plane.rotation.x = - Math.PI / 2;
-// scene.add( plane );
+			const geometry = new THREE.PlaneGeometry( 5000, 2000, 32 );
+const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+const plane = new THREE.Mesh( geometry, material );
+plane.rotation.x = - Math.PI / 2;
+scene.add( plane );
 
 			const loader = new GLTFLoader().setPath( './models/' );
-            loader.load( 'TRY8CODE.glb', ( gltf ) => {
-                scene.add( gltf.scene );
-            })
+
+
+			let mixer = null
+			var action;
+
+//CenterToCamera
+var positionScreenSpace = new THREE.Vector3();
+var threshold = 0.2;			
+// // //Sphere 4
+var sphere4 = new THREE.Mesh(
+    new THREE.SphereGeometry( 0.1, 16, 16),
+	new THREE.MeshStandardMaterial({ color: 0x3300FF, roughness:0.4}))
+	scene.add(sphere4)
+sphere4.position.y = 0.3;
+var test
+
+// var test
+			
+			// déclaration chaise animée
+            loader.load( 'chaise.glb', ( gltf ) => {
+				gltf.scene.scale.set(1,1,1)
+				scene.add( gltf.scene );
+				
+				mixer = new THREE.AnimationMixer(gltf.scene)
+				action = mixer.clipAction(gltf.animations[0])
+				action.setLoop( THREE.LoopOnce );
+                console.log(gltf.scene)
+			})
+
+            // const box = new THREE.Box3().setFromObject(mesh);
+            // const center = box.getCenter(new THREE.Vector3());
+
+            // mesh.position.set(
+            // mesh.position.x - center.x,
+            // mesh.position.y - center.y,
+            // mesh.position.z - center.z
+            // );
+
+            // loader.load( 'TRY8CODE.glb', ( gltf ) => {
+            //     scene.add( gltf.scene );
+			// })
+
 			loader.load( 'collions.glb', ( gltf ) => {
 				scene.add( gltf.scene );
 
@@ -359,13 +399,88 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 				} );
 
+				// anim chaise au onclick
+				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
 
+				function onDocumentMouseDown( event ) {
+
+				    // if ( action !== null ) {
+
+                    //     action.stop();
+                    //     action.play();
+					// }
+                                                
+                    event.preventDefault();
+
+                    if(test == 1 && action !== null)
+                    {   
+                        action.stop();
+                        action.play();
+                        console.log('c bon')
+                    }
+                    else if(test == 2)
+                    {
+                        console.log('echec')
+                    }
+
+
+				}
+
+
+	
 				animate();
 
 			} );
 
 			function animate() {
 
+
+				// 	fonction maxime
+				test = 0
+				//Check Center Screen
+				positionScreenSpace.copy(sphere4.position).project(camera);
+				positionScreenSpace.setZ(0);
+				var isCloseToCenter = positionScreenSpace.length() < threshold;
+
+				//If character close to object
+				// console.log('Camera X : ',camera.position.x)
+                // console.log('Camera Z : ',camera.position.z)
+				if((camera.position.x-sphere4.position.x)<1 && (camera.position.x-sphere4.position.x)>-1 && (camera.position.z-sphere4.position.z)<1 &&(camera.position.z-sphere4.position.z)>-1){   
+					console.log('proche')
+					//If character targetting object
+					if(isCloseToCenter){
+						sphere4.material.color.set('#ff0000')
+						test = 1
+					}
+					else{
+						sphere4.material.color.set('#0000ff')
+						test = 2
+					}
+				}
+				else{
+				console.log('loin')
+				sphere4.material.color.set('#0000ff')
+				test = 2
+				}
+
+                // if((camera.position.x-'chaise.glb'.position.x)<1 && (camera.position.x-sphere4.position.x)>-1 && (camera.position.z-sphere4.position.z)<1 &&(camera.position.z-sphere4.position.z)>-1){   
+				// 	console.log('proche')
+				// 	//If character targetting object
+				// 	if(isCloseToCenter){
+				// 		sphere4.material.color.set('#ff0000')
+				// 		test = 1
+				// 	}
+				// 	else{
+				// 		sphere4.material.color.set('#0000ff')
+				// 		test = 2
+				// 	}
+				// }
+				// else{
+				// console.log('loin')
+				// sphere4.material.color.set('#0000ff')
+				// test = 2
+				// }
+		
 				const deltaTime = Math.min( 0.1, clock.getDelta() );
 
 				controls( deltaTime );
@@ -373,6 +488,12 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 				updatePlayer( deltaTime );
 
 				updateSpheres( deltaTime );
+
+				//Calcule animation de la chaise
+				if( mixer !== null)
+				{
+					mixer.update(deltaTime)
+				}
 
 				renderer.render( scene, camera );
 
