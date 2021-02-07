@@ -9,57 +9,22 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { Octree } from 'three/examples/jsm/math/Octree.js';
 import { Capsule } from 'three/examples/jsm/math/Capsule.js';
-import { Vector3 } from 'three'
+import { Mesh, Vector3 } from 'three'
 
+/**
+ * Global Variables Declarations
+ */
 let closestObject = null;
 let isAnimationInProgress = false;
 let canAnimate = false;
-const clock = new THREE.Clock();
-const scene = new THREE.Scene();
-scene.background = new THREE.Color( 0x88ccff );
-
-const box1 = new THREE.Mesh(
-	new THREE.BoxBufferGeometry(1, 1, 1),
-	new THREE.MeshPhysicalMaterial({color: "red"})
-)
-const box2 = new THREE.Mesh(
-	new THREE.BoxBufferGeometry(1, 1, 1),
-	new THREE.MeshPhysicalMaterial({color: "blue"})
-)
-
-const boxes = [
-	{name: "red cube", mesh: box1, position: new Vector3(5, 0.5, -2)},
-	{name: "blue cube", mesh: box2, position: new Vector3(7, 0.5, 1.25)},
-];
-
-/**
- * Positions Helper
- */
-const posXElement = document.querySelector('.positionX');
-const posYElement = document.querySelector('.positionY');
-const posZElement = document.querySelector('.positionZ');
-const distB1 = document.querySelector('.distB1');
-const distB2 = document.querySelector('.distB2');
-function updatePositionHelper() {
-
-	posXElement.innerHTML = `posX : ${Math.round(camera.position.x * 100) /100}`
-	posYElement.innerHTML = `posY : ${Math.round(camera.position.y * 100) /100}`
-	posZElement.innerHTML = `posZ : ${Math.round(camera.position.z * 100) /100}`
-
-	let distFromRed = getDistanceFromVector3(boxes[0].position);
-	let distFromBlue = getDistanceFromVector3(boxes[1].position);
-	distB1.innerHTML = `Distance from red : ${Math.round(distFromRed * 100) /100}`
-	distB2.innerHTML = `Distance from blue : ${Math.round(distFromBlue * 100) /100}`
-	
-
-}
 
 /**
  * Loaders
  */
-const loadingContainerElement = document.querySelector('.progress-container')
+// const loadingContainerElement = document.querySelector('.progress-container')
 const loadingTextElement = document.querySelector('.progress-text');
 const loadingBarElement = document.querySelector('.progress-bar');
+
 const loadingManager = new THREE.LoadingManager(
 	// Loaded
 	() => {
@@ -79,17 +44,31 @@ const loadingManager = new THREE.LoadingManager(
 	} 
 )
 
+const textureLoader = new THREE.TextureLoader(loadingManager);
+const planeTexture = textureLoader.load( 'textures/circle.png' );
 
-const loader = new GLTFLoader(loadingManager).setPath( './models/' );
-loader.load( 'structurev4.glb', ( gltf ) => {
+const gltfLoader = new GLTFLoader(loadingManager).setPath( './models/' );
+gltfLoader.load( 'structurev4.glb', ( gltf ) => {
 	scene.add( gltf.scene );
 
 	for (const object of boxes) {
+		// Add each object to the scene
 		object.mesh.position.copy(object.position)
 		scene.add(object.mesh)
+
+		// Add circle plane to each object
+		let plane = new THREE.Mesh(planeGeometry, planeMaterial);
+		// Rotate plane to place it on the ground
+		plane.rotation.x = - Math.PI / 2;
+		plane.position.copy(object.mesh.position)
+		// Math.random to avoid z-fighting if plane are overlaping
+		plane.position.y = 0.025 + (Math.random() * 0.01)
+		console.log(plane.position.y)
+		scene.add(plane)
+
 	}
 })
-loader.load( 'test_collision_v1.glb', ( gltf ) => {
+gltfLoader.load( 'test_collision_v1.glb', ( gltf ) => {
 	scene.add( gltf.scene );
 
 	worldOctree.fromGraphNode( gltf.scene );
@@ -118,6 +97,54 @@ loader.load( 'test_collision_v1.glb', ( gltf ) => {
 	animate();
 
 } );
+
+/**
+ * Base
+ */
+const clock = new THREE.Clock();
+const scene = new THREE.Scene();
+scene.background = new THREE.Color( 0x88ccff );
+
+const box1 = new THREE.Mesh(
+	new THREE.BoxBufferGeometry(1, 1, 1),
+	new THREE.MeshPhysicalMaterial({color: "red"})
+)
+const box2 = new THREE.Mesh(
+	new THREE.BoxBufferGeometry(1, 1, 1),
+	new THREE.MeshPhysicalMaterial({color: "blue"})
+)
+
+const planeGeometry = new THREE.PlaneBufferGeometry(3.5, 3.5);
+const planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture})
+planeMaterial.side = THREE.DoubleSide;
+
+const boxes = [
+	{name: "red cube", mesh: box1, position: new Vector3(5, 0.5, -2)},
+	{name: "blue cube", mesh: box2, position: new Vector3(7, 0.5, 1.25)},
+];
+
+
+/**
+ * Positions Helper
+ */
+const posXElement = document.querySelector('.positionX');
+const posYElement = document.querySelector('.positionY');
+const posZElement = document.querySelector('.positionZ');
+const distB1 = document.querySelector('.distB1');
+const distB2 = document.querySelector('.distB2');
+function updatePositionHelper() {
+
+	posXElement.innerHTML = `posX : ${Math.round(camera.position.x * 100) /100}`
+	posYElement.innerHTML = `posY : ${Math.round(camera.position.y * 100) /100}`
+	posZElement.innerHTML = `posZ : ${Math.round(camera.position.z * 100) /100}`
+
+	let distFromRed = getDistanceFromVector3(boxes[0].position);
+	let distFromBlue = getDistanceFromVector3(boxes[1].position);
+	distB1.innerHTML = `Distance from red : ${Math.round(distFromRed * 100) /100}`
+	distB2.innerHTML = `Distance from blue : ${Math.round(distFromBlue * 100) /100}`
+	
+
+}
 
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 camera.rotation.order = 'YXZ';
@@ -395,7 +422,7 @@ function getClosestObject() {
 		// Get distance camera --> box
 		const distFromCamera = getDistanceFromVector3(object.position);
 		// Compare disatnce to threshold
-		if(distFromCamera < 2 ) {
+		if(distFromCamera < 1.5 ) {
 			if(closestObject === null) {
 				closestObject = object;
 			// If an obj is already stored, replace if closer
