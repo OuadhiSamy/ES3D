@@ -9,11 +9,50 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 import { Octree } from 'three/examples/jsm/math/Octree.js';
 import { Capsule } from 'three/examples/jsm/math/Capsule.js';
+import { Vector3 } from 'three'
 
-
+let closestObject = null;
+let isAnimationInProgress = false;
+let canAnimate = false;
 const clock = new THREE.Clock();
 const scene = new THREE.Scene();
 scene.background = new THREE.Color( 0x88ccff );
+
+const box1 = new THREE.Mesh(
+	new THREE.BoxBufferGeometry(1, 1, 1),
+	new THREE.MeshPhysicalMaterial({color: "red"})
+)
+const box2 = new THREE.Mesh(
+	new THREE.BoxBufferGeometry(1, 1, 1),
+	new THREE.MeshPhysicalMaterial({color: "blue"})
+)
+
+const boxes = [
+	{name: "red cube", mesh: box1, position: new Vector3(5, 0.5, -2)},
+	{name: "blue cube", mesh: box2, position: new Vector3(7, 0.5, 1.25)},
+];
+
+/**
+ * Positions Helper
+ */
+const posXElement = document.querySelector('.positionX');
+const posYElement = document.querySelector('.positionY');
+const posZElement = document.querySelector('.positionZ');
+const distB1 = document.querySelector('.distB1');
+const distB2 = document.querySelector('.distB2');
+function updatePositionHelper() {
+
+	posXElement.innerHTML = `posX : ${Math.round(camera.position.x * 100) /100}`
+	posYElement.innerHTML = `posY : ${Math.round(camera.position.y * 100) /100}`
+	posZElement.innerHTML = `posZ : ${Math.round(camera.position.z * 100) /100}`
+
+	let distFromRed = getDistanceFromVector3(boxes[0].position);
+	let distFromBlue = getDistanceFromVector3(boxes[1].position);
+	distB1.innerHTML = `Distance from red : ${Math.round(distFromRed * 100) /100}`
+	distB2.innerHTML = `Distance from blue : ${Math.round(distFromBlue * 100) /100}`
+	
+
+}
 
 /**
  * Loaders
@@ -44,6 +83,11 @@ const loadingManager = new THREE.LoadingManager(
 const loader = new GLTFLoader(loadingManager).setPath( './models/' );
 loader.load( 'structurev4.glb', ( gltf ) => {
 	scene.add( gltf.scene );
+
+	for (const object of boxes) {
+		object.mesh.position.copy(object.position)
+		scene.add(object.mesh)
+	}
 })
 loader.load( 'test_collision_v1.glb', ( gltf ) => {
 	scene.add( gltf.scene );
@@ -337,6 +381,52 @@ function getSideVector() {
 
 }
 
+function getDistanceFromVector3(vec3) {
+	return camera.position.distanceTo(vec3)
+}
+
+
+function getClosestObject() {
+
+	let closestObject = null;
+	// Maybe get element and copy position insted
+	for(let object of boxes) {
+
+		// Get distance camera --> box
+		const distFromCamera = getDistanceFromVector3(object.position);
+		// Compare disatnce to threshold
+		if(distFromCamera < 2 ) {
+			if(closestObject === null) {
+				closestObject = object;
+			// If an obj is already stored, replace if closer
+			} else if(distFromCamera < getDistanceFromVector3(closestObject.position)) {
+				closestObject = object;
+			}
+		}
+	}
+	
+	return closestObject;
+}
+
+const interactionElement = document.querySelector('.interaction-text');
+function updateInteractionButtonState(visible) {
+	
+	if(visible) {
+		interactionElement.classList.add('visible')
+	}
+	else {
+		interactionElement.classList.remove('visible')
+	}
+}
+
+// function animateClosestObject() {
+// 	// Test purpose, same animation for every object
+// 	// After, need to get mixer animation and test with real fbx animations
+
+
+// 	console.log(closestObject)
+// }
+
 function controls( deltaTime ) {
 
 	const speed = 25;
@@ -373,6 +463,30 @@ function controls( deltaTime ) {
 
 		}
 
+		if (keyStates[ 'KeyE' ]) {
+			
+			if(closestObject && canAnimate) {
+				if (!isAnimationInProgress) {
+
+					// Prevent from animate more than once
+					isAnimationInProgress = true
+					gsap.to(closestObject.mesh.position, {duration: 1, y: 3})
+					gsap.to(closestObject.mesh.position, {duration: 1, y: 0.5, delay: 1})
+
+	
+					setTimeout(() => {
+						isAnimationInProgress = false
+					}, 2000)
+	
+				} else {
+					return
+				}
+			} else return
+
+		}
+
+
+
 		// if ( playerVelocity.y >0 || playerVelocity.y <0 && keyStates[ 'KeyW' ] ) {
 
 		// 	playerVelocity.add( getSideVector().multiplyScalar( speed * deltaTime ) );
@@ -392,6 +506,18 @@ function controls( deltaTime ) {
 function animate() {
 
 	const deltaTime = Math.min( 0.1, clock.getDelta() );
+
+	updatePositionHelper();
+
+	closestObject = getClosestObject();
+
+	if(closestObject && !isAnimationInProgress) {
+		updateInteractionButtonState(true)
+		canAnimate = true;
+	} else {
+		canAnimate = false
+		updateInteractionButtonState(false)
+	}
 
 	controls( deltaTime );
 

@@ -3,6 +3,7 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .webgl, #container {
@@ -43,12 +44,46 @@ body {
 }
 
 .progress-container > .progress-text {
-    font-family: Arial, Helvetica, sans-serif;
     font-size: 52px;
     font-weight: bold;
     text-align: center;
     margin-bottom: 48px;
     color: #fff;
+}
+
+.position-helper {
+    position: fixed;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 8px 8px 0 0;
+    /* width: 80px; */
+    height: 60px;
+    z-index: 2;
+}
+
+.position-helper > .position {
+    color: white;
+    font-size: 14px;
+}
+
+.interaction-text {
+    position: fixed;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 16px;
+    z-index: 2;
+    color: #fff;
+    border: 1px solid #fff;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.interaction-text.visible {
+    opacity: 1;
 }
 
 #blocker {
