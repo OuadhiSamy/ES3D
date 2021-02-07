@@ -41,10 +41,10 @@ const loadingManager = new THREE.LoadingManager(
 
 
 const loader = new GLTFLoader(loadingManager).setPath( './models/' );
-loader.load( 'TRY8CODE.glb', ( gltf ) => {
+loader.load( 'structurev4.glb', ( gltf ) => {
 	scene.add( gltf.scene );
 })
-loader.load( 'collions.glb', ( gltf ) => {
+loader.load( 'test_collision_v1.glb', ( gltf ) => {
 	scene.add( gltf.scene );
 
 	worldOctree.fromGraphNode( gltf.scene );
