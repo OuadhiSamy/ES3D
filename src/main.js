@@ -77,15 +77,14 @@ gltfLoader.load('structurev4.glb', (gltf) => {
 		let boundBox = new THREE.Box3().setFromObject(object.mesh);
 		let objectSize = boundBox.getSize(); // objectSize is a vector3
 		let newArrow = arrowMesh.clone();
-		newArrow.position.set(object.mesh.position.x, objectSize.y + 0.25 + 0.15, object.mesh.position.z )
-		console.log(objectSize.y)
-		console.log(newArrow.position.y)
+		newArrow.position.set(object.mesh.position.x, objectSize.y + 0.25 + 0.15, object.mesh.position.z)
+		newArrow.material.transparent = true;
 		scene.add(newArrow)
 		arrows.push(newArrow);
 
 		// Add circle plane to each object
 		let plane = new THREE.Mesh(planeGeometry, planeMaterial);
-		
+
 		// Rotate plane to place it on the ground
 		plane.rotation.x = - Math.PI / 2;
 		plane.position.copy(object.mesh.position)
@@ -181,7 +180,7 @@ function updatePositionHelper() {
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.rotation.order = 'YXZ';
-camera.rotateY( - Math.PI * 0.5);
+camera.rotateY(- Math.PI * 0.5);
 
 const ambientlight = new THREE.AmbientLight(0x6688cc);
 scene.add(ambientlight);
@@ -480,14 +479,6 @@ function updateInteractionButtonState(visible) {
 	}
 }
 
-// function animateClosestObject() {
-// 	// Test purpose, same animation for every object
-// 	// After, need to get mixer animation and test with real fbx animations
-
-
-// 	console.log(closestObject)
-// }
-
 function controls(deltaTime) {
 
 	const speed = 25;
@@ -531,12 +522,22 @@ function controls(deltaTime) {
 
 					// Prevent from animate more than once
 					isAnimationInProgress = true
+
+					// Hide Arrows
+					for (const arrow of arrows) {
+						gsap.to(arrow.material, { duration: 0.2, opacity: 0 });
+					}
 					gsap.to(closestObject.mesh.position, { duration: 1, y: 3 })
 					gsap.to(closestObject.mesh.position, { duration: 1, y: 0.5, delay: 1 })
 
 
 					setTimeout(() => {
 						isAnimationInProgress = false
+
+						// Display Arrows
+						for (const arrow of arrows) {
+							gsap.to(arrow.material, { duration: 0.2, opacity: 1 });
+						}
 					}, 2000)
 
 				} else {
@@ -545,19 +546,6 @@ function controls(deltaTime) {
 			} else return
 
 		}
-
-		// if(keyStates['KeyC']) {
-		// 	console.log('ouicccc')
-		// 	document.body.requestPointerLock();
-		// }
-
-
-
-		// if ( playerVelocity.y >0 || playerVelocity.y <0 && keyStates[ 'KeyW' ] ) {
-
-		// 	playerVelocity.add( getSideVector().multiplyScalar( speed * deltaTime ) );
-
-		// }
 
 	}
 
@@ -606,7 +594,7 @@ function animate() {
 	updatePlayer(deltaTime);
 
 	updateSpheres(deltaTime);
-	
+
 	animateArrows(elapsedTime);
 
 	renderer.render(scene, camera);
