@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as dat from 'dat.gui'
 import { gsap } from 'gsap'
+import {Howl, Howler} from 'howler';
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
@@ -11,19 +12,35 @@ import { Octree } from 'three/examples/jsm/math/Octree.js';
 import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 import { Mesh, Vector3 } from 'three'
 
+
 /**
  * Global Variables Declarations
  */
 let closestObject = null;
 let isAnimationInProgress = false;
 let canAnimate = false;
-
+let soundMuted = 0;
 /**
  * Loaders
  */
 // const loadingContainerElement = document.querySelector('.progress-container')
 const loadingTextElement = document.querySelector('.progress-text');
 const loadingBarElement = document.querySelector('.progress-bar');
+
+const sound = new Howl({
+	src: ['sounds/spacefunk.mp3'],
+	loop: true,
+	volume: 0.09,
+	autoplay:true,
+	preload:true
+  });
+  const id8 = sound.play();
+
+const cafe = new Howl({
+	src: ['sounds/coffee.mp3'],
+	volume:0.3
+  });
+
 
 const loadingManager = new THREE.LoadingManager(
 	// Loaded
@@ -229,6 +246,18 @@ document.addEventListener( 'keydown', ( event ) => {
 
 	keyStates[ event.code ] = true;
 
+    if ( keyStates['KeyO'] ) {
+	  if ( soundMuted == 0 ) {
+	  sound.pause();
+	  soundMuted = 1;
+	  console.log('mute')
+	  }
+	  else{
+		  sound.play();
+		  soundMuted = 0
+		  console.log('unmute') 
+		}
+  };
 } );
 
 document.addEventListener( 'keyup', ( event ) => {
@@ -495,12 +524,18 @@ function controls( deltaTime ) {
 			if(closestObject && canAnimate) {
 				if (!isAnimationInProgress) {
 
+					const id9 = cafe.play();
+					// sound.pause();
+
+					// if (playing(['cafe'] = false)
+					// sound.play();
+					
+					
 					// Prevent from animate more than once
 					isAnimationInProgress = true
 					gsap.to(closestObject.mesh.position, {duration: 1, y: 3})
 					gsap.to(closestObject.mesh.position, {duration: 1, y: 0.5, delay: 1})
 
-	
 					setTimeout(() => {
 						isAnimationInProgress = false
 					}, 2000)
@@ -560,3 +595,9 @@ function animate() {
 
 }
 
+
+
+
+
+
+ 
