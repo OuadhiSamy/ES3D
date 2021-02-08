@@ -145,8 +145,17 @@ const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture })
 planeMaterial.side = THREE.DoubleSide;
 
 const boxes = [
-	{ name: "red cube", mesh: box1, position: new Vector3(5, 0.75 / 2, -2) },
-	{ name: "blue cube", mesh: box2, position: new Vector3(7, 1.25 / 2, 1.25) },
+	{
+		name: "red cube",
+		mesh: box1, position: new Vector3(5, 0.75 / 2, -2), 
+		insight: "Vous insérez une pièce dans la machine et vous sélectionnez un grand café fort pour vous remettre de votre code sprint. La machine se lance, mais vous présente finalement un gobelet vide.Vous auriez mieux fait de choisir un café en intraveineuse."
+	},
+	{ 
+		name: "blue cube", 
+		mesh: box2, 
+		position: new Vector3(7, 1.25 / 2, 1.25), 
+		insight: "Vous avez une pause entre deux sessions de recherches UX, le fatboy vous fait de l’œil. Il a l'air moelleux et réconfortant. Vous vous sentez attiré(e) par son aura. Alors que vous êtes sur le point de vous laisser engloutir par la tentation, votre meilleur ami vous tapote l'épaule et vous ramène à la réalité."
+	},
 ];
 
 
@@ -473,6 +482,20 @@ function updateInteractionButtonState(visible) {
 	}
 }
 
+const insightElement = document.querySelector('.insight');
+function displayInsight() {
+	// Get insight content
+	insightElement.innerHTML = closestObject.insight;
+
+	//Display Text
+	gsap.to('.insight', {opacity: 1, duration: 0.3})
+	
+	//Hide Text
+	gsap.to('.insight', {opacity: 0, duration: 0.3, delay: 2})
+	// Clear
+	insightElement.insight = '';
+}
+
 function controls(deltaTime) {
 
 	const speed = 25;
@@ -515,14 +538,15 @@ function controls(deltaTime) {
 				if (!isAnimationInProgress) {
 
 					// Prevent from animate more than once
+					displayInsight()
 					isAnimationInProgress = true
-
+					
 					// Hide Arrows
 					for (const arrow of arrows) {
 						gsap.to(arrow.material, { duration: 0.2, opacity: 0 });
 					}
 
-					const prevPosY = closestObject.mesh.position.y;  
+					const prevPosY = closestObject.mesh.position.y;
 					gsap.to(closestObject.mesh.position, { duration: 1, y: closestObject.mesh.position.y + 2 })
 					gsap.to(closestObject.mesh.position, { duration: 1, y: prevPosY, delay: 1 })
 
@@ -555,8 +579,6 @@ function animateArrows(elapsedTime) {
 }
 
 function isPlayerLookingAtObject(deltaTime) {
-	const closestObject = getClosestObject()
-
 	if (closestObject) {
 		positionScreenSpace.copy(closestObject.position).project(camera);
 		positionScreenSpace.setZ(0);
@@ -564,14 +586,8 @@ function isPlayerLookingAtObject(deltaTime) {
 	} else return false
 }
 
-let time = Date.now()
-
 
 function animate() {
-
-	if(closestObject)
-	console.log(closestObject.mesh.position.y)
-
 
 	const deltaTime = Math.min(0.1, clock.getDelta());
 	const elapsedTime = clock.getElapsedTime()
