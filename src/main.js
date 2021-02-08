@@ -11,6 +11,8 @@ import { Octree } from 'three/examples/jsm/math/Octree.js';
 import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 import { Mesh, Vector3 } from 'three'
 
+const gui = new dat.GUI();
+
 /**
  * Global Variables Declarations
  */
@@ -40,7 +42,6 @@ const loadingManager = new THREE.LoadingManager(
 	},
 	// Progress
 	(itemUrl, itemsLoaded, itemsTotal) => {
-		console.log(itemsLoaded)
 		const progressRatio = itemsLoaded / itemsTotal;
 		loadingTextElement.innerHTML = `${progressRatio * 100}%`
 		loadingBarElement.style.transform = `scaleX(${progressRatio})`
@@ -64,7 +65,7 @@ gltfLoader.load('arrow.glb', (arrow) => {
 
 gltfLoader.load('structurev4.glb', (gltf) => {
 
-	scene.add(gltf.scene);
+	// scene.add(gltf.scene);
 
 	for (const object of boxes) {
 		// Add each object to the scene
@@ -75,21 +76,21 @@ gltfLoader.load('structurev4.glb', (gltf) => {
 		// get object size
 		let boundBox = new THREE.Box3().setFromObject(object.mesh);
 		let objectSize = boundBox.getSize(); // objectSize is a vector3
-		console.log(arrowMesh)
 		let newArrow = arrowMesh.clone();
-		arrows.push(newArrow);
-		newArrow.position.set(object.mesh.position.x, object.mesh.position.y + 1, object.mesh.position.z )
-		// newArrow.scale.set(0.25, 0.025, 0.025);
+		newArrow.position.set(object.mesh.position.x, objectSize.y + 0.35, object.mesh.position.z )
+		console.log(newArrow.position.y)
 		scene.add(newArrow)
+		arrows.push(newArrow);
 
 		// Add circle plane to each object
 		let plane = new THREE.Mesh(planeGeometry, planeMaterial);
+		
 		// Rotate plane to place it on the ground
 		plane.rotation.x = - Math.PI / 2;
 		plane.position.copy(object.mesh.position)
+
 		// Math.random to avoid z-fighting if plane are overlaping
 		plane.position.y = 0.025 + (Math.random() * 0.01)
-		console.log(plane.position.y)
 		scene.add(plane)
 	}
 
@@ -97,7 +98,7 @@ gltfLoader.load('structurev4.glb', (gltf) => {
 
 })
 
-gltfLoader.load('test_collision_v1.glb', (gltf) => {
+gltfLoader.load('threejs_colliders.glb', (gltf) => {
 
 	scene.add(gltf.scene);
 
@@ -135,20 +136,13 @@ const clock = new THREE.Clock();
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x88ccff);
 
-let material = new THREE.MeshStandardMaterial({ color: "#444", transparent: true, side: THREE.DoubleSide, alphaTest: 0.5 });
-
-let alphaMap = textureLoader.load('textures/alpha.png');
-material.alphaMap = alphaMap;
-material.alphaMap.magFilter = THREE.NearestFilter;
-material.alphaMap.wrapT = THREE.RepeatWrapping;
-material.alphaMap.repeat.y = 1;
 
 const box1 = new THREE.Mesh(
-	new THREE.BoxBufferGeometry(1, 1, 1),
-	material
+	new THREE.BoxBufferGeometry(1, 0.75, 1),
+	new THREE.MeshPhysicalMaterial({ color: "red" })
 )
 const box2 = new THREE.Mesh(
-	new THREE.BoxBufferGeometry(1, 1, 1),
+	new THREE.BoxBufferGeometry(1, 1.25, 1),
 	new THREE.MeshPhysicalMaterial({ color: "blue" })
 )
 
@@ -459,7 +453,7 @@ function getClosestObject() {
 
 		// Get distance camera --> box
 		const distFromCamera = getDistanceFromVector3(object.position);
-		// Compare disatnce to threshold
+		// Compare distance to threshold
 		if (distFromCamera < 1.5) {
 			if (closestObject === null) {
 				closestObject = object;
@@ -550,6 +544,11 @@ function controls(deltaTime) {
 
 		}
 
+		// if(keyStates['KeyC']) {
+		// 	console.log('ouicccc')
+		// 	document.body.requestPointerLock();
+		// }
+
 
 
 		// if ( playerVelocity.y >0 || playerVelocity.y <0 && keyStates[ 'KeyW' ] ) {
@@ -593,9 +592,6 @@ function animate() {
 	closestObject = getClosestObject();
 
 	if (closestObject && !isAnimationInProgress && isPlayerLookingAtObject()) {
-		if (closestObject.mesh.material.alphaMap) {
-			// closestObject.mesh.material.alphaMap.offset.y = delta * 0.00015;
-		}
 		updateInteractionButtonState(true)
 		canAnimate = true;
 	} else {
@@ -609,7 +605,7 @@ function animate() {
 
 	updateSpheres(deltaTime);
 	
-	animateArrows(elapsedTime);
+	// animateArrows(elapsedTime);
 
 	renderer.render(scene, camera);
 
