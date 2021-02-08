@@ -77,7 +77,8 @@ gltfLoader.load('structurev4.glb', (gltf) => {
 		let boundBox = new THREE.Box3().setFromObject(object.mesh);
 		let objectSize = boundBox.getSize(); // objectSize is a vector3
 		let newArrow = arrowMesh.clone();
-		newArrow.position.set(object.mesh.position.x, objectSize.y + 0.35, object.mesh.position.z )
+		newArrow.position.set(object.mesh.position.x, objectSize.y + 0.25 + 0.15, object.mesh.position.z )
+		console.log(objectSize.y)
 		console.log(newArrow.position.y)
 		scene.add(newArrow)
 		arrows.push(newArrow);
@@ -151,8 +152,8 @@ const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture })
 planeMaterial.side = THREE.DoubleSide;
 
 const boxes = [
-	{ name: "red cube", mesh: box1, position: new Vector3(5, 0.5, -2) },
-	{ name: "blue cube", mesh: box2, position: new Vector3(7, 0.5, 1.25) },
+	{ name: "red cube", mesh: box1, position: new Vector3(5, 0.75 / 2, -2) },
+	{ name: "blue cube", mesh: box2, position: new Vector3(7, 1.25 / 2, 1.25) },
 ];
 
 
@@ -180,6 +181,7 @@ function updatePositionHelper() {
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.rotation.order = 'YXZ';
+camera.rotateY( - Math.PI * 0.5);
 
 const ambientlight = new THREE.AmbientLight(0x6688cc);
 scene.add(ambientlight);
@@ -518,7 +520,7 @@ function controls(deltaTime) {
 
 		if (keyStates['Space']) {
 
-			playerVelocity.y = 15;
+			playerVelocity.y = 10;
 
 		}
 
@@ -563,7 +565,7 @@ function controls(deltaTime) {
 
 function animateArrows(elapsedTime) {
 	for (const arrow of arrows) {
-		arrow.position.y = arrow.position.y + (Math.cos(elapsedTime) * 0.003)
+		arrow.position.y = arrow.position.y + (Math.cos(elapsedTime) * 0.002)
 		arrow.rotation.y = elapsedTime * 0.5
 	}
 }
@@ -605,7 +607,7 @@ function animate() {
 
 	updateSpheres(deltaTime);
 	
-	// animateArrows(elapsedTime);
+	animateArrows(elapsedTime);
 
 	renderer.render(scene, camera);
 
