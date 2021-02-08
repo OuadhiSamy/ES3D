@@ -17,6 +17,8 @@ import { Mesh, Vector3 } from 'three'
 let closestObject = null;
 let isAnimationInProgress = false;
 let canAnimate = false;
+let positionScreenSpace = new THREE.Vector3();
+let threshold = 1;
 
 /**
  * Loaders
@@ -30,7 +32,7 @@ const loadingManager = new THREE.LoadingManager(
 	() => {
 		// Animations after loading, can be done w/o gsap
 		let loadingTimeline = gsap.timeline();
-		loadingTimeline.to(".progress-container", {delay: 0.4, duration: 0.4, opacity: 0, y: 100, ease: "ease-in"} )
+		loadingTimeline.to(".progress-container", { delay: 0.4, duration: 0.4, opacity: 0, y: 100, ease: "ease-in" })
 		loadingTimeline.to(".overlay", { delay: 1.5, duration: 1, opacity: 0 })
 
 	},
@@ -40,16 +42,17 @@ const loadingManager = new THREE.LoadingManager(
 		const progressRatio = itemsLoaded / itemsTotal;
 		loadingTextElement.innerHTML = `${progressRatio * 100}%`
 		loadingBarElement.style.transform = `scaleX(${progressRatio})`
-		
-	} 
+
+	}
 )
 
 const textureLoader = new THREE.TextureLoader(loadingManager);
-const planeTexture = textureLoader.load( 'textures/circle.png' );
+const planeTexture = textureLoader.load('textures/circle.png');
 
-const gltfLoader = new GLTFLoader(loadingManager).setPath( './models/' );
-gltfLoader.load( 'structurev4.glb', ( gltf ) => {
-	scene.add( gltf.scene );
+const gltfLoader = new GLTFLoader(loadingManager).setPath('./models/');
+gltfLoader.load('structurev4.glb', (gltf) => {
+
+	scene.add(gltf.scene);
 
 	for (const object of boxes) {
 		// Add each object to the scene
@@ -65,62 +68,65 @@ gltfLoader.load( 'structurev4.glb', ( gltf ) => {
 		plane.position.y = 0.025 + (Math.random() * 0.01)
 		console.log(plane.position.y)
 		scene.add(plane)
-
 	}
+
+	// animate();
+
 })
-gltfLoader.load( 'test_collision_v1.glb', ( gltf ) => {
-	scene.add( gltf.scene );
+gltfLoader.load('test_collision_v1.glb', (gltf) => {
 
-	worldOctree.fromGraphNode( gltf.scene );
+	scene.add(gltf.scene);
 
-	gltf.scene.traverse( child => {
+	worldOctree.fromGraphNode(gltf.scene);
 
-		if ( child.isMesh ) {
+	gltf.scene.traverse(child => {
+
+		if (child.isMesh) {
 			// child.castShadow = true;
 			// child.receiveShadow = true;
 
-			if ( child.material.map ) {
+			if (child.material.map) {
 
 				child.material.map.anisotropy = 8;
-				
+
 
 			}
-				// // // set opacity to 50%
-				child.material.opacity = 0.5;
-				// // // enable transparency
-				child.material.transparent = true;
+			// // // set opacity to 50%
+			child.material.opacity = 0.5;
+			// // // enable transparency
+			child.material.transparent = true;
 		}
 
-	} );
+	});
 
 
 	animate();
 
-} );
+});
 
 /**
  * Base
  */
 const clock = new THREE.Clock();
 const scene = new THREE.Scene();
-scene.background = new THREE.Color( 0x88ccff );
+scene.background = new THREE.Color(0x88ccff);
 
 const box1 = new THREE.Mesh(
 	new THREE.BoxBufferGeometry(1, 1, 1),
-	new THREE.MeshPhysicalMaterial({color: "red"})
+	new THREE.MeshPhysicalMaterial({ color: "red" })
 )
 const box2 = new THREE.Mesh(
 	new THREE.BoxBufferGeometry(1, 1, 1),
-	new THREE.MeshPhysicalMaterial({color: "blue"})
+	new THREE.MeshPhysicalMaterial({ color: "blue" })
 )
 
 const planeGeometry = new THREE.PlaneBufferGeometry(3.5, 3.5);
-const planeMaterial = new THREE.MeshBasicMaterial({map: planeTexture})
+const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture })
 planeMaterial.side = THREE.DoubleSide;
 
 const boxes = [
-	{name: "red cube", mesh: box1, position: new Vector3(5, 0.5, -2)},
-	{name: "blue cube", mesh: box2, position: new Vector3(7, 0.5, 1.25)},
+	{ name: "red cube", mesh: box1, position: new Vector3(5, 0.5, -2) },
+	{ name: "blue cube", mesh: box2, position: new Vector3(7, 0.5, 1.25) },
 ];
 
 
@@ -134,89 +140,89 @@ const distB1 = document.querySelector('.distB1');
 const distB2 = document.querySelector('.distB2');
 function updatePositionHelper() {
 
-	posXElement.innerHTML = `posX : ${Math.round(camera.position.x * 100) /100}`
-	posYElement.innerHTML = `posY : ${Math.round(camera.position.y * 100) /100}`
-	posZElement.innerHTML = `posZ : ${Math.round(camera.position.z * 100) /100}`
+	posXElement.innerHTML = `posX : ${Math.round(camera.position.x * 100) / 100}`
+	posYElement.innerHTML = `posY : ${Math.round(camera.position.y * 100) / 100}`
+	posZElement.innerHTML = `posZ : ${Math.round(camera.position.z * 100) / 100}`
 
 	let distFromRed = getDistanceFromVector3(boxes[0].position);
 	let distFromBlue = getDistanceFromVector3(boxes[1].position);
-	distB1.innerHTML = `Distance from red : ${Math.round(distFromRed * 100) /100}`
-	distB2.innerHTML = `Distance from blue : ${Math.round(distFromBlue * 100) /100}`
-	
+	distB1.innerHTML = `Distance from red : ${Math.round(distFromRed * 100) / 100}`
+	distB2.innerHTML = `Distance from blue : ${Math.round(distFromBlue * 100) / 100}`
+
 
 }
 
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.rotation.order = 'YXZ';
 
-const ambientlight = new THREE.AmbientLight( 0x6688cc );
-scene.add( ambientlight );
+const ambientlight = new THREE.AmbientLight(0x6688cc);
+scene.add(ambientlight);
 
-const fillLight1 = new THREE.DirectionalLight( 0xff9999, 0.5 );
-fillLight1.position.set( - 1, 1, 2 );
-scene.add( fillLight1 );
+const fillLight1 = new THREE.DirectionalLight(0xff9999, 0.5);
+fillLight1.position.set(- 1, 1, 2);
+scene.add(fillLight1);
 
-const fillLight2 = new THREE.DirectionalLight( 0x8888ff, 0.2 );
-fillLight2.position.set( 0, - 1, 0 );
-scene.add( fillLight2 );
+const fillLight2 = new THREE.DirectionalLight(0x8888ff, 0.2);
+fillLight2.position.set(0, - 1, 0);
+scene.add(fillLight2);
 
-const directionalLight = new THREE.DirectionalLight( 0xffffaa, 1.2 );
-directionalLight.position.set( - 5, 25, - 1 );
+const directionalLight = new THREE.DirectionalLight(0xffffaa, 1.2);
+directionalLight.position.set(- 5, 25, - 1);
 directionalLight.castShadow = true;
 directionalLight.shadow.camera.near = 0.01;
 directionalLight.shadow.camera.far = 500;
 directionalLight.shadow.camera.right = 30;
 directionalLight.shadow.camera.left = - 30;
-directionalLight.shadow.camera.top	= 30;
+directionalLight.shadow.camera.top = 30;
 directionalLight.shadow.camera.bottom = - 30;
 directionalLight.shadow.mapSize.width = 1024;
 directionalLight.shadow.mapSize.height = 1024;
 directionalLight.shadow.radius = 4;
 directionalLight.shadow.bias = - 0.00006;
-scene.add( directionalLight );
+scene.add(directionalLight);
 
-const renderer = new THREE.WebGLRenderer( { antialias: true } );
-renderer.setPixelRatio( window.devicePixelRatio );
-renderer.setSize( window.innerWidth, window.innerHeight );
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.VSMShadowMap;
 
-const container = document.getElementById( 'container' );
+const container = document.getElementById('container');
 
-container.appendChild( renderer.domElement );
+container.appendChild(renderer.domElement);
 
 const stats = new Stats();
 stats.domElement.style.position = 'absolute';
 stats.domElement.style.top = '0px';
 
-container.appendChild( stats.domElement );
+container.appendChild(stats.domElement);
 
 const GRAVITY = 30;
 
 const NUM_SPHERES = 20;
 const SPHERE_RADIUS = 0.2;
 
-const sphereGeometry = new THREE.SphereGeometry( SPHERE_RADIUS, 32, 32 );
-const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0x888855, roughness: 0.8, metalness: 0.5 } );
+const sphereGeometry = new THREE.SphereGeometry(SPHERE_RADIUS, 32, 32);
+const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x888855, roughness: 0.8, metalness: 0.5 });
 
 const spheres = [];
 let sphereIdx = 0;
 
-for ( let i = 0; i < NUM_SPHERES; i ++ ) {
+for (let i = 0; i < NUM_SPHERES; i++) {
 
-	const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+	const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 	sphere.castShadow = true;
 	sphere.receiveShadow = true;
 
-	scene.add( sphere );
+	scene.add(sphere);
 
-	spheres.push( { mesh: sphere, collider: new THREE.Sphere( new THREE.Vector3( 0, - 100, 0 ), SPHERE_RADIUS ), velocity: new THREE.Vector3() } );
+	spheres.push({ mesh: sphere, collider: new THREE.Sphere(new THREE.Vector3(0, - 100, 0), SPHERE_RADIUS), velocity: new THREE.Vector3() });
 
 }
 
 const worldOctree = new Octree();
 
-const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
+const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1, 0), 0.35);
 
 const playerVelocity = new THREE.Vector3();
 const playerDirection = new THREE.Vector3();
@@ -225,47 +231,47 @@ let playerOnFloor = true;
 
 const keyStates = {};
 
-document.addEventListener( 'keydown', ( event ) => {
+document.addEventListener('keydown', (event) => {
 
-	keyStates[ event.code ] = true;
+	keyStates[event.code] = true;
 
-} );
+});
 
-document.addEventListener( 'keyup', ( event ) => {
+document.addEventListener('keyup', (event) => {
 
-	keyStates[ event.code ] = false;
+	keyStates[event.code] = false;
 
-} );
+});
 
-document.addEventListener( 'mousedown', () => {
+document.addEventListener('mousedown', () => {
 
 	document.body.requestPointerLock();
 
-} );
+});
 
-document.body.addEventListener( 'mousemove', ( event ) => {
+document.body.addEventListener('mousemove', (event) => {
 
-	if ( document.pointerLockElement === document.body ) {
+	if (document.pointerLockElement === document.body) {
 
 		camera.rotation.y -= event.movementX / 500;
 		camera.rotation.x -= event.movementY / 500;
 
 	}
 
-} );
+});
 
-window.addEventListener( 'resize', onWindowResize );
+window.addEventListener('resize', onWindowResize);
 
 function onWindowResize() {
 
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 
-	renderer.setSize( window.innerWidth, window.innerHeight );
+	renderer.setSize(window.innerWidth, window.innerHeight);
 
 }
 
-document.addEventListener( 'click', () => {
+document.addEventListener('click', () => {
 
 	// const sphere = spheres[ sphereIdx ];
 
@@ -276,36 +282,36 @@ document.addEventListener( 'click', () => {
 
 	// sphereIdx = ( sphereIdx + 1 ) % spheres.length;
 
-} );
+});
 
 function playerCollitions() {
 
-	const result = worldOctree.capsuleIntersect( playerCollider );
+	const result = worldOctree.capsuleIntersect(playerCollider);
 
 	playerOnFloor = false;
 
-	if ( result ) {
+	if (result) {
 
 		playerOnFloor = result.normal.y > 0;
 
-		if ( ! playerOnFloor ) {
+		if (!playerOnFloor) {
 
-			playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
+			playerVelocity.addScaledVector(result.normal, - result.normal.dot(playerVelocity));
 
 		}
 
-		playerCollider.translate( result.normal.multiplyScalar( result.depth ) );
+		playerCollider.translate(result.normal.multiplyScalar(result.depth));
 
 	}
 
 }
 
-function updatePlayer( deltaTime ) {
+function updatePlayer(deltaTime) {
 
-	if ( playerOnFloor ) {
+	if (playerOnFloor) {
 
-		const damping = Math.exp( - 3 * deltaTime ) - 1;
-		playerVelocity.addScaledVector( playerVelocity, damping );
+		const damping = Math.exp(- 3 * deltaTime) - 1;
+		playerVelocity.addScaledVector(playerVelocity, damping);
 
 	} else {
 
@@ -313,41 +319,41 @@ function updatePlayer( deltaTime ) {
 
 	}
 
-	const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
-	playerCollider.translate( deltaPosition );
+	const deltaPosition = playerVelocity.clone().multiplyScalar(deltaTime);
+	playerCollider.translate(deltaPosition);
 
 	playerCollitions();
 
-	camera.position.copy( playerCollider.end );
+	camera.position.copy(playerCollider.end);
 
 }
 
 function spheresCollisions() {
 
-	for ( let i = 0; i < spheres.length; i ++ ) {
+	for (let i = 0; i < spheres.length; i++) {
 
-		const s1 = spheres[ i ];
+		const s1 = spheres[i];
 
-		for ( let j = i + 1; j < spheres.length; j ++ ) {
+		for (let j = i + 1; j < spheres.length; j++) {
 
-			const s2 = spheres[ j ];
+			const s2 = spheres[j];
 
-			const d2 = s1.collider.center.distanceToSquared( s2.collider.center );
+			const d2 = s1.collider.center.distanceToSquared(s2.collider.center);
 			const r = s1.collider.radius + s2.collider.radius;
 			const r2 = r * r;
 
-			if ( d2 < r2 ) {
+			if (d2 < r2) {
 
-				const normal = s1.collider.clone().center.sub( s2.collider.center ).normalize();
-				const v1 = normal.clone().multiplyScalar( normal.dot( s1.velocity ) );
-				const v2 = normal.clone().multiplyScalar( normal.dot( s2.velocity ) );
-				s1.velocity.add( v2 ).sub( v1 );
-				s2.velocity.add( v1 ).sub( v2 );
+				const normal = s1.collider.clone().center.sub(s2.collider.center).normalize();
+				const v1 = normal.clone().multiplyScalar(normal.dot(s1.velocity));
+				const v2 = normal.clone().multiplyScalar(normal.dot(s2.velocity));
+				s1.velocity.add(v2).sub(v1);
+				s2.velocity.add(v1).sub(v2);
 
-				const d = ( r - Math.sqrt( d2 ) ) / 2;
+				const d = (r - Math.sqrt(d2)) / 2;
 
-				s1.collider.center.addScaledVector( normal, d );
-				s2.collider.center.addScaledVector( normal, - d );
+				s1.collider.center.addScaledVector(normal, d);
+				s2.collider.center.addScaledVector(normal, - d);
 
 			}
 
@@ -357,18 +363,18 @@ function spheresCollisions() {
 
 }
 
-function updateSpheres( deltaTime ) {
+function updateSpheres(deltaTime) {
 
-	spheres.forEach( sphere =>{
+	spheres.forEach(sphere => {
 
-		sphere.collider.center.addScaledVector( sphere.velocity, deltaTime );
+		sphere.collider.center.addScaledVector(sphere.velocity, deltaTime);
 
-		const result = worldOctree.sphereIntersect( sphere.collider );
+		const result = worldOctree.sphereIntersect(sphere.collider);
 
-		if ( result ) {
+		if (result) {
 
-			sphere.velocity.addScaledVector( result.normal, - result.normal.dot( sphere.velocity ) * 1.5 );
-			sphere.collider.center.add( result.normal.multiplyScalar( result.depth ) );
+			sphere.velocity.addScaledVector(result.normal, - result.normal.dot(sphere.velocity) * 1.5);
+			sphere.collider.center.add(result.normal.multiplyScalar(result.depth));
 
 		} else {
 
@@ -376,20 +382,20 @@ function updateSpheres( deltaTime ) {
 
 		}
 
-		const damping = Math.exp( - 1.5 * deltaTime ) - 1;
-		sphere.velocity.addScaledVector( sphere.velocity, damping );
+		const damping = Math.exp(- 1.5 * deltaTime) - 1;
+		sphere.velocity.addScaledVector(sphere.velocity, damping);
 
 		spheresCollisions();
 
-		sphere.mesh.position.copy( sphere.collider.center );
+		sphere.mesh.position.copy(sphere.collider.center);
 
-	} );
+	});
 
 }
 
 function getForwardVector() {
 
-	camera.getWorldDirection( playerDirection );
+	camera.getWorldDirection(playerDirection);
 	playerDirection.y = 0;
 	playerDirection.normalize();
 
@@ -399,10 +405,10 @@ function getForwardVector() {
 
 function getSideVector() {
 
-	camera.getWorldDirection( playerDirection );
+	camera.getWorldDirection(playerDirection);
 	playerDirection.y = 0;
 	playerDirection.normalize();
-	playerDirection.cross( camera.up );
+	playerDirection.cross(camera.up);
 
 	return playerDirection;
 
@@ -417,28 +423,28 @@ function getClosestObject() {
 
 	let closestObject = null;
 	// Maybe get element and copy position insted
-	for(let object of boxes) {
+	for (let object of boxes) {
 
 		// Get distance camera --> box
 		const distFromCamera = getDistanceFromVector3(object.position);
 		// Compare disatnce to threshold
-		if(distFromCamera < 1.5 ) {
-			if(closestObject === null) {
+		if (distFromCamera < 1.5) {
+			if (closestObject === null) {
 				closestObject = object;
-			// If an obj is already stored, replace if closer
-			} else if(distFromCamera < getDistanceFromVector3(closestObject.position)) {
+				// If an obj is already stored, replace if closer
+			} else if (distFromCamera < getDistanceFromVector3(closestObject.position)) {
 				closestObject = object;
 			}
 		}
 	}
-	
+
 	return closestObject;
 }
 
 const interactionElement = document.querySelector('.interaction-text');
 function updateInteractionButtonState(visible) {
-	
-	if(visible) {
+
+	if (visible) {
 		interactionElement.classList.add('visible')
 	}
 	else {
@@ -454,57 +460,57 @@ function updateInteractionButtonState(visible) {
 // 	console.log(closestObject)
 // }
 
-function controls( deltaTime ) {
+function controls(deltaTime) {
 
 	const speed = 25;
 
-	if ( playerOnFloor ) {
+	if (playerOnFloor) {
 
-		if ( keyStates[ 'KeyW' ] ) {
+		if (keyStates['KeyW']) {
 
-			playerVelocity.add( getForwardVector().multiplyScalar( speed * deltaTime ) );
-
-		}
-
-		if ( keyStates[ 'KeyS' ] ) {
-
-			playerVelocity.add( getForwardVector().multiplyScalar( - speed * deltaTime ) );
+			playerVelocity.add(getForwardVector().multiplyScalar(speed * deltaTime));
 
 		}
 
-		if ( keyStates[ 'KeyA' ] ) {
+		if (keyStates['KeyS']) {
 
-			playerVelocity.add( getSideVector().multiplyScalar( - speed * deltaTime ) );
-
-		}
-
-		if ( keyStates[ 'KeyD' ] ) {
-
-			playerVelocity.add( getSideVector().multiplyScalar( speed * deltaTime ) );
+			playerVelocity.add(getForwardVector().multiplyScalar(- speed * deltaTime));
 
 		}
 
-		if ( keyStates[ 'Space' ] ) {
+		if (keyStates['KeyA']) {
+
+			playerVelocity.add(getSideVector().multiplyScalar(- speed * deltaTime));
+
+		}
+
+		if (keyStates['KeyD']) {
+
+			playerVelocity.add(getSideVector().multiplyScalar(speed * deltaTime));
+
+		}
+
+		if (keyStates['Space']) {
 
 			playerVelocity.y = 15;
 
 		}
 
-		if (keyStates[ 'KeyE' ]) {
-			
-			if(closestObject && canAnimate) {
+		if (keyStates['KeyE']) {
+
+			if (closestObject && canAnimate) {
 				if (!isAnimationInProgress) {
 
 					// Prevent from animate more than once
 					isAnimationInProgress = true
-					gsap.to(closestObject.mesh.position, {duration: 1, y: 3})
-					gsap.to(closestObject.mesh.position, {duration: 1, y: 0.5, delay: 1})
+					gsap.to(closestObject.mesh.position, { duration: 1, y: 3 })
+					gsap.to(closestObject.mesh.position, { duration: 1, y: 0.5, delay: 1 })
 
-	
+
 					setTimeout(() => {
 						isAnimationInProgress = false
 					}, 2000)
-	
+
 				} else {
 					return
 				}
@@ -524,21 +530,26 @@ function controls( deltaTime ) {
 
 }
 
-// 			const geometry = new THREE.PlaneGeometry( 5000, 2000, 32 );
-// const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-// const plane = new THREE.Mesh( geometry, material );
-// plane.rotation.x = - Math.PI / 2;
-// scene.add( plane );
+function isPlayerLookingAtObject() {
+	const closestObject = getClosestObject()
+
+	if (closestObject) {
+		positionScreenSpace.copy(closestObject.position).project(camera);
+		positionScreenSpace.setZ(0);
+		console.log(positionScreenSpace.length() < threshold)
+		return positionScreenSpace.length() < threshold;
+	} else return false
+}
 
 function animate() {
 
-	const deltaTime = Math.min( 0.1, clock.getDelta() );
+	const deltaTime = Math.min(0.1, clock.getDelta());
 
 	updatePositionHelper();
 
 	closestObject = getClosestObject();
 
-	if(closestObject && !isAnimationInProgress) {
+	if (closestObject && !isAnimationInProgress && isPlayerLookingAtObject()) {
 		updateInteractionButtonState(true)
 		canAnimate = true;
 	} else {
@@ -546,17 +557,17 @@ function animate() {
 		updateInteractionButtonState(false)
 	}
 
-	controls( deltaTime );
+	controls(deltaTime);
 
-	updatePlayer( deltaTime );
+	updatePlayer(deltaTime);
 
-	updateSpheres( deltaTime );
+	updateSpheres(deltaTime);
 
-	renderer.render( scene, camera );
+	renderer.render(scene, camera);
 
 	stats.update();
 
-	requestAnimationFrame( animate );
+	requestAnimationFrame(animate);
 
 }
 
