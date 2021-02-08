@@ -30,12 +30,12 @@ const loadingBarElement = document.querySelector('.progress-bar');
 const sound = new Howl({
 	src: ['sounds/spacefunk.mp3'],
 	loop: true,
-	volume: 0.09,
+	volume: 0.08,
 	autoplay:true,
 	preload:true
   });
-  const id8 = sound.play();
-
+    sound.play();
+ 
 const cafe = new Howl({
 	src: ['sounds/coffee.mp3'],
 	volume:0.3
