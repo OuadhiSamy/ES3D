@@ -3,7 +3,16 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as dat from 'dat.gui'
-//import gsap from 'gsap'
+
+//import post prod 
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { SMAAPass} from 'three/examples/jsm/postprocessing/SMAAPass.js';
+
+import { ShaderPass} from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { CopyShader} from 'three/examples/jsm/shaders/CopyShader.js';
+
+import { UnrealBloomPass} from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 import Stats from 'three/examples/jsm/libs/stats.module.js';
 
@@ -11,6 +20,7 @@ import { Octree } from 'three/examples/jsm/math/Octree.js';
 import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 
+		
 			const clock = new THREE.Clock();
 
 			const scene = new THREE.Scene();
@@ -63,26 +73,6 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 			const GRAVITY = 30;
 
-			const NUM_SPHERES = 20;
-			const SPHERE_RADIUS = 0.2;
-
-			const sphereGeometry = new THREE.SphereGeometry( SPHERE_RADIUS, 32, 32 );
-			const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0x888855, roughness: 0.8, metalness: 0.5 } );
-
-			const spheres = [];
-			let sphereIdx = 0;
-
-			for ( let i = 0; i < NUM_SPHERES; i ++ ) {
-
-				const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
-				sphere.castShadow = true;
-				sphere.receiveShadow = true;
-
-				scene.add( sphere );
-
-				spheres.push( { mesh: sphere, collider: new THREE.Sphere( new THREE.Vector3( 0, - 100, 0 ), SPHERE_RADIUS ), velocity: new THREE.Vector3() } );
-
-			}
 
 			const worldOctree = new Octree();
 
@@ -132,6 +122,10 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 				camera.updateProjectionMatrix();
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				// Update effect composer
+				effectComposer.setPixelRatio(Math.min(window.devicePixelRatio,2))
+				effectComposer.setSize(window.innerWidth, window.innerHeight)
 
 			}
 
@@ -192,70 +186,10 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 			}
 
-			function spheresCollisions() {
+			//copiécollé
+			camera.layers.enable(1);
+			renderer.autoClear = false;
 
-				for ( let i = 0; i < spheres.length; i ++ ) {
-
-					const s1 = spheres[ i ];
-
-					for ( let j = i + 1; j < spheres.length; j ++ ) {
-
-						const s2 = spheres[ j ];
-
-						const d2 = s1.collider.center.distanceToSquared( s2.collider.center );
-						const r = s1.collider.radius + s2.collider.radius;
-						const r2 = r * r;
-
-						if ( d2 < r2 ) {
-
-							const normal = s1.collider.clone().center.sub( s2.collider.center ).normalize();
-							const v1 = normal.clone().multiplyScalar( normal.dot( s1.velocity ) );
-							const v2 = normal.clone().multiplyScalar( normal.dot( s2.velocity ) );
-							s1.velocity.add( v2 ).sub( v1 );
-							s2.velocity.add( v1 ).sub( v2 );
-
-							const d = ( r - Math.sqrt( d2 ) ) / 2;
-
-							s1.collider.center.addScaledVector( normal, d );
-							s2.collider.center.addScaledVector( normal, - d );
-
-						}
-
-					}
-
-				}
-
-			}
-
-			function updateSpheres( deltaTime ) {
-
-				spheres.forEach( sphere =>{
-
-					sphere.collider.center.addScaledVector( sphere.velocity, deltaTime );
-
-					const result = worldOctree.sphereIntersect( sphere.collider );
-
-					if ( result ) {
-
-						sphere.velocity.addScaledVector( result.normal, - result.normal.dot( sphere.velocity ) * 1.5 );
-						sphere.collider.center.add( result.normal.multiplyScalar( result.depth ) );
-
-					} else {
-
-						sphere.velocity.y -= GRAVITY * deltaTime;
-
-					}
-
-					const damping = Math.exp( - 1.5 * deltaTime ) - 1;
-					sphere.velocity.addScaledVector( sphere.velocity, damping );
-
-					spheresCollisions();
-
-					sphere.mesh.position.copy( sphere.collider.center );
-
-				} );
-
-			}
 
 			function getForwardVector() {
 
@@ -323,17 +257,114 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 				}
 
 			}
+				
+			// Add Plane
+				const geometry = new THREE.PlaneGeometry( 5000, 2000, 32 );
+				const material = new THREE.MeshBasicMaterial( {color: 0x3D2B1F, side: THREE.DoubleSide} );
+				const plane = new THREE.Mesh( geometry, material );
+				plane.rotation.x = - Math.PI / 2;
+				scene.add( plane );
 
-// 			const geometry = new THREE.PlaneGeometry( 5000, 2000, 32 );
-// const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
-// const plane = new THREE.Mesh( geometry, material );
-// plane.rotation.x = - Math.PI / 2;
-// scene.add( plane );
+		
+		
+
+
+
 
 			const loader = new GLTFLoader().setPath( './models/' );
-            loader.load( 'TRY8CODE.glb', ( gltf ) => {
-                scene.add( gltf.scene );
-            })
+
+
+			let mixer = null
+			var action;
+
+			//CenterToCamera
+			var positionScreenSpace = new THREE.Vector3();
+			var threshold = 0.2;
+			
+		
+
+
+			// // //Sphere 4
+			var sphere4 = new THREE.Mesh(
+				new THREE.SphereGeometry( 0.1, 16, 16),
+				new THREE.MeshStandardMaterial({ color: 0x3300FF, roughness:0.4}))
+				scene.add(sphere4)
+			sphere4.position.y = 0.3;
+			var test
+
+
+			/*Post processing*/
+
+			// Optimisation du calcul pour basculer sur WebGLMultisampleRenderTarget s'il est supporté par le navigateur
+			let RenderTargetClass = null
+
+			if(renderer.getPixelRatio() === 1 && renderer.capabilities.isWebGL2)
+			{
+				RenderTargetClass = THREE.WebGLMultisampleRenderTarget
+				// console.log('Using WebGLMultisampleRenderTarget')
+			}
+			else
+			{
+				RenderTargetClass = THREE.WebGLRenderTarget
+				// console.log('Using WebGLRenderTarget')
+			}
+
+
+			const renderTarget = new THREE.WebGLRenderTarget(
+				800,
+				600,
+				{
+					minFilter: THREE.LinearFilter,
+					magFilter: THREE.LinearFilter,
+					format: THREE.RGBAFormat,
+					encoding: THREE.sRGBEncoding
+				}
+			)
+			
+
+			////Effect Composer
+			const effectComposer = new EffectComposer( renderer, renderTarget );
+			effectComposer.setPixelRatio(Math.min(window.devicePixelRatio,2))
+			effectComposer.setSize(window.innerWidth, window.innerHeight)
+			// console.log(effectComposer)
+			const renderPass = new RenderPass(scene, camera)
+			effectComposer.addPass(renderPass)
+
+			const bloomPass = new UnrealBloomPass()
+			bloomPass.enabled = true
+			bloomPass.strength = 0.5
+			bloomPass.radius = 0.55
+			bloomPass.threshold = 0.21
+			effectComposer.addPass(bloomPass)
+
+			////Recalcule l'antialiasing seulement si WebGL2 n'est pas supporté par le navigateur
+			
+			if(renderer.getPixelRatio() === 1 && !renderer.capabilities.isWebGL2)
+			{
+				const smaaPass = new SMAAPass()
+				effectComposer.addPass(smaaPass)
+				console.log('Using SMAA')		
+			}
+			
+
+			// //Cube
+
+
+			// déclaration chaise animée
+            loader.load( 'chaise.glb', ( gltf ) => {
+				gltf.scene.scale.set(1,1,1)
+				scene.add( gltf.scene );
+
+				// console.log(gltf)
+				mixer = new THREE.AnimationMixer(gltf.scene)
+				action = mixer.clipAction(gltf.animations[0])
+				action.setLoop( THREE.LoopOnce );
+			})
+
+            // loader.load( 'TRY8CODE.glb', ( gltf ) => {
+            //     scene.add( gltf.scene );
+			// })
+
 			loader.load( 'collions.glb', ( gltf ) => {
 				scene.add( gltf.scene );
 
@@ -359,26 +390,134 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 				} );
 
+				// anim chaise au onclick
+				document.addEventListener( 'mousedown', onDocumentMouseDown, false );
 
+				function onDocumentMouseDown( event ) {
+
+				    // if ( action !== null ) {
+
+                    //     action.stop();
+                    //     action.play();
+					// }
+                                                
+                    event.preventDefault();
+
+                    if(test == 1 && action !== null)
+                    {   
+                        action.stop();
+                        action.play();
+                        console.log('c bon')
+                    }
+                    else if(test == 2)
+                    {
+                        console.log('echec')
+					}
+					
+
+				}
+				
+		
+				////cube rouge
+				var cube = new THREE.Mesh(
+					new THREE.BoxGeometry(1, 1, 1),
+					new THREE.MeshStandardMaterial({ color: 0xff0000}))
+					scene.add(cube)
+
+					var obj = cube;
+					obj.layers.set(0);
+					obj.position.z = 2;
+					scene.add(obj);
+
+				////cube vert
+				var cube2 = new THREE.Mesh(
+					new THREE.BoxGeometry(1, 6, 1),
+					new THREE.MeshStandardMaterial({ color: 0x20680a}))
+					scene.add(cube2)
+
+					var objBack = cube2
+					objBack.position.z = -2;				
+					objBack.layers.set(1);
+					scene.add(objBack);
+				
+				
+				console.log(scene);
+				
 				animate();
 
 			} );
 
+			
+
+			
+
 			function animate() {
 
+
+				// 	fonction maxime
+				test = 0
+				//Check Center Screen
+				positionScreenSpace.copy(scene.children[6].children[2].position).project(camera);
+				positionScreenSpace.setZ(0);
+				var isCloseToCenter = positionScreenSpace.length() < threshold;
+
+				//If character close to object
+				//console.log('Camera : ',camera.position.x)
+				//console.log('Sphere : ',sphere4.position.x)
+				if((camera.position.x-scene.children[6].children[2].position.x)<4 && (camera.position.x-scene.children[6].children[2].position.x)>-4 && (camera.position.z-scene.children[6].children[2].position.z)<4 &&(camera.position.z-scene.children[6].children[2].position.z)>-4){   
+					// console.log('proche')
+					//If character targetting object
+					if(isCloseToCenter){
+						
+						sphere4.material.color.set('#ff0000')
+						test = 1
+					}
+					else{
+						sphere4.material.color.set('#0000ff')
+					
+						test = 2
+					}
+				}
+				else{
+				// console.log('loin')
+				sphere4.material.color.set('#0000ff')
+			
+				test = 2
+				}
+		
 				const deltaTime = Math.min( 0.1, clock.getDelta() );
 
 				controls( deltaTime );
 
 				updatePlayer( deltaTime );
 
-				updateSpheres( deltaTime );
+				// updateSpheres( deltaTime );
 
+				//Calcule animation de la chaise
+				if( mixer !== null)
+				{
+					mixer.update(deltaTime)
+				}
+
+				
+				//selection anim glow
+				renderer.clearDepth();
+				camera.layers.set(0);
 				renderer.render( scene, camera );
+
+
+				//selection anim glow
+				renderer.clear();
+				camera.layers.set(1);
+				effectComposer.render()
+
+				
 
 				stats.update();
 
+
 				requestAnimationFrame( animate );
+				
 
 			}
 
