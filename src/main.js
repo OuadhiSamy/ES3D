@@ -43,7 +43,7 @@ const loadingManager = new THREE.LoadingManager(
 	// Progress
 	(itemUrl, itemsLoaded, itemsTotal) => {
 		const progressRatio = itemsLoaded / itemsTotal;
-		loadingTextElement.innerHTML = `${progressRatio * 100}%`
+		loadingTextElement.innerHTML = `${Math.round(progressRatio * 100)}%`
 		loadingBarElement.style.transform = `scaleX(${progressRatio})`
 
 	}
@@ -77,7 +77,7 @@ gltfLoader.load('structurev4.glb', (gltf) => {
 		let boundBox = new THREE.Box3().setFromObject(object.mesh);
 		let objectSize = boundBox.getSize(); // objectSize is a vector3
 		let newArrow = arrowMesh.clone();
-		newArrow.position.set(object.mesh.position.x, objectSize.y + 0.25 + 0.15, object.mesh.position.z)
+		newArrow.position.set(object.mesh.position.x, objectSize.y + 0.4, object.mesh.position.z)
 		newArrow.material.transparent = true;
 		scene.add(newArrow)
 		arrows.push(newArrow);
@@ -94,8 +94,6 @@ gltfLoader.load('structurev4.glb', (gltf) => {
 		scene.add(plane)
 	}
 
-	// animate();
-
 })
 
 gltfLoader.load('threejs_colliders.glb', (gltf) => {
@@ -107,8 +105,6 @@ gltfLoader.load('threejs_colliders.glb', (gltf) => {
 	gltf.scene.traverse(child => {
 
 		if (child.isMesh) {
-			// child.castShadow = true;
-			// child.receiveShadow = true;
 
 			if (child.material.map) {
 
@@ -116,9 +112,7 @@ gltfLoader.load('threejs_colliders.glb', (gltf) => {
 
 
 			}
-			// // // set opacity to 50%
 			child.material.opacity = 0.5;
-			// // // enable transparency
 			child.material.transparent = true;
 		}
 
@@ -527,8 +521,10 @@ function controls(deltaTime) {
 					for (const arrow of arrows) {
 						gsap.to(arrow.material, { duration: 0.2, opacity: 0 });
 					}
-					gsap.to(closestObject.mesh.position, { duration: 1, y: 3 })
-					gsap.to(closestObject.mesh.position, { duration: 1, y: 0.5, delay: 1 })
+
+					const prevPosY = closestObject.mesh.position.y;  
+					gsap.to(closestObject.mesh.position, { duration: 1, y: closestObject.mesh.position.y + 2 })
+					gsap.to(closestObject.mesh.position, { duration: 1, y: prevPosY, delay: 1 })
 
 
 					setTimeout(() => {
@@ -564,7 +560,6 @@ function isPlayerLookingAtObject(deltaTime) {
 	if (closestObject) {
 		positionScreenSpace.copy(closestObject.position).project(camera);
 		positionScreenSpace.setZ(0);
-		console.log(deltaTime)
 		return positionScreenSpace.length() < threshold;
 	} else return false
 }
@@ -573,6 +568,10 @@ let time = Date.now()
 
 
 function animate() {
+
+	if(closestObject)
+	console.log(closestObject.mesh.position.y)
+
 
 	const deltaTime = Math.min(0.1, clock.getDelta());
 	const elapsedTime = clock.getElapsedTime()
