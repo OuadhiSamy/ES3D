@@ -73,6 +73,11 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 			const spheres = [];
 			let sphereIdx = 0;
 
+			document.body.requestPointerLock();
+
+			//document.body.innerHTML = document.body.innerHTML + '<div id="blocker"><div id="instructions"><span style="font-size:36px">Click to play</span><br /><br />Move: ZQSD<br/>Jump: SPACE<br/>Look: MOUSE</div></div>'
+			//document.body.innerHTML = document.body.innerHTML + '<div class="gui"><div class="hud-layer"><div class="crosshair"><img src="/images/crosshair.svg" class="image"></div></div></div>'
+
 			for ( let i = 0; i < NUM_SPHERES; i ++ ) {
 
 				const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
@@ -95,10 +100,28 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 			let playerOnFloor = true;
 
 			const keyStates = {};
+			console.log(document.pointerLockElement)
+			
 
 			document.addEventListener( 'keydown', ( event ) => {
 
 				keyStates[ event.code ] = true;
+
+				if ( keyStates[ 'KeyM' ] || keyStates[ 'Key,' ] ) {
+					if(document.pointerLockElement === null)
+					{
+						document.body.requestPointerLock()
+						overlayDisplay = 0
+						overlay.style.display = 'none';
+					}
+					else{
+						document.exitPointerLock();
+						overlayDisplay = 1
+						overlay.style.display = 'flex';
+					}
+					
+
+				}
 
 			} );
 
@@ -108,11 +131,11 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 			} );
 
-			document.addEventListener( 'mousedown', () => {
+			// document.addEventListener( 'mousedown', () => {
 
-				document.body.requestPointerLock();
+			// 	document.body.requestPointerLock();
 
-			} );
+			// } );
 
 			document.body.addEventListener( 'mousemove', ( event ) => {
 
@@ -228,6 +251,11 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 			}
 
+			
+			const overlay = document.getElementById( 'overlay' );
+			let overlayDisplay = 1
+
+
 			function updateSpheres( deltaTime ) {
 
 				spheres.forEach( sphere =>{
@@ -291,6 +319,7 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 					}
 
+					
 					if ( keyStates[ 'KeyS' ] ) {
 
 						playerVelocity.add( getForwardVector().multiplyScalar( - speed * deltaTime ) );
@@ -326,7 +355,7 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 			}
 
 			const geometry = new THREE.PlaneGeometry( 5000, 2000, 32 );
-const material = new THREE.MeshBasicMaterial( {color: 0xffff00, side: THREE.DoubleSide} );
+const material = new THREE.MeshBasicMaterial( {color: 0x9A86A1, side: THREE.DoubleSide} );
 const plane = new THREE.Mesh( geometry, material );
 plane.rotation.x = - Math.PI / 2;
 scene.add( plane );
