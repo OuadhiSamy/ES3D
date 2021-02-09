@@ -1,5 +1,5 @@
 html,
-body {   
+body {
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -11,7 +11,8 @@ body {
     z-index: 2 !important;
 }
 
-.webgl, #container {
+.webgl,
+#container {
     position: fixed;
     top: 0;
     left: 0;
@@ -133,7 +134,7 @@ body {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 #instructions {
@@ -188,7 +189,7 @@ body {
     display: grid;
 }
 
-.hud-layer .crosshair{
+.hud-layer .crosshair {
     display: grid;
     position: absolute;
     align-self: center;

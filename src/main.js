@@ -20,8 +20,43 @@ let closestObject = null;
 let isAnimationInProgress = false;
 let canAnimate = false;
 let positionScreenSpace = new THREE.Vector3();
-let threshold = 1;
+let threshold = 2.5;
 let arrows = [];
+let wallMaterial = new THREE.MeshPhysicalMaterial({
+	color: 0x1c1c1c,
+	roughness: 10,
+	metalness: 0.6,
+});
+
+
+let mixer = null;
+
+/**
+ * Parameters map, used to link an object to his informations (position, insight), using
+ */
+let paramMap = [
+	{
+		name: "chaise",
+		mesh: null,
+		position: new Vector3(5, 0, 1.25),
+		action: null,
+		duration: 10,
+		insight: "Encore une chaise jaune. Cet objet est présent dans tout le campus, à tel point que vous avez l'impression que celle-ci vous suit partout. Elle vient de vous regarder mal là, non ?"
+	},
+	{
+		name: "machine_a_cafe",
+		mesh: null,
+		position: new Vector3(5, 0, -2.8),
+		action: null,
+		duration: 10,
+		insight: "Vous insérez une pièce dans la machine et vous sélectionnez un grand café fort pour vous remettre de votre code sprint. La machine se lance, mais vous présente finalement un gobelet vide. Vous auriez mieux fait de choisir un café en intraveineuse."
+	},
+]
+
+/**
+ * Content that will be display
+ */
+let sceneItems = []
 
 
 /**
@@ -39,6 +74,42 @@ const loadingManager = new THREE.LoadingManager(
 		loadingTimeline.to(".progress-container", { delay: 0.4, duration: 0.4, opacity: 0, y: 100, ease: "ease-in" })
 		loadingTimeline.to(".overlay", { delay: 1.5, duration: 1, opacity: 0 })
 
+
+		for (const object of sceneItems) {
+
+			// Add each object to the scene, acconrding to his position set in paramMap
+			// object.mesh.parent.position.copy(object.position)
+			// object.mesh.position.copy(object.position)
+			// console.log(object.mesh.parent.position)
+			// console.log(object)
+			// scene.add(object.mesh)
+
+			// Add arrow on top of each object
+			// get object size
+			let boundBox = new THREE.Box3().setFromObject(object.mesh);
+			console.log(object.mesh)
+			const helper = new THREE.Box3Helper(boundBox, 0xffff00);
+			scene.add(helper);
+			let objectSize = boundBox.getSize(); // objectSize is a vector3
+			let newArrow = arrowMesh.clone();
+			newArrow.position.set(object.mesh.parent.position.x, objectSize.y + 0.4, object.mesh.parent.position.z)
+			newArrow.material.transparent = true;
+			scene.add(newArrow)
+			arrows.push(newArrow);
+
+			// // Add circle plane to each object
+			// let plane = new THREE.Mesh(planeGeometry, planeMaterial);
+
+			// // Rotate plane to place it on the ground
+			// plane.rotation.x = - Math.PI / 2;
+			// plane.position.copy(object.mesh.position)
+
+			// // Math.random to avoid z-fighting if plane are overlaping
+			// plane.position.y = 0.025 + (Math.random() * 0.01)
+			// scene.add(plane)
+		}
+
+
 	},
 	// Progress
 	(itemUrl, itemsLoaded, itemsTotal) => {
@@ -54,100 +125,18 @@ const planeTexture = textureLoader.load('textures/circle.png');
 
 const gltfLoader = new GLTFLoader(loadingManager).setPath('./models/');
 
-// Load arrow cursor mesh
-let arrowMesh;
-gltfLoader.load('arrow.glb', (arrow) => {
-	arrowMesh = arrow.scene.children[0];
-	// console.log(arrowMesh)
-	// arrowMesh.position.set(3.5, 2, 0.35)
-	// scene.add(arrowMesh);
-})
-
-gltfLoader.load('structurev4.glb', (gltf) => {
-
-	// scene.add(gltf.scene);
-
-	for (const object of boxes) {
-		// Add each object to the scene
-		object.mesh.position.copy(object.position)
-		scene.add(object.mesh)
-
-		// Add arrow on top of each object
-		// get object size
-		let boundBox = new THREE.Box3().setFromObject(object.mesh);
-		let objectSize = boundBox.getSize(); // objectSize is a vector3
-		let newArrow = arrowMesh.clone();
-		newArrow.position.set(object.mesh.position.x, objectSize.y + 0.4, object.mesh.position.z)
-		newArrow.material.transparent = true;
-		scene.add(newArrow)
-		arrows.push(newArrow);
-
-		// Add circle plane to each object
-		let plane = new THREE.Mesh(planeGeometry, planeMaterial);
-
-		// Rotate plane to place it on the ground
-		plane.rotation.x = - Math.PI / 2;
-		plane.position.copy(object.mesh.position)
-
-		// Math.random to avoid z-fighting if plane are overlaping
-		plane.position.y = 0.025 + (Math.random() * 0.01)
-		// scene.add(plane)
-	}
-
-})
-
-// let material = new THREE.MeshStandardMaterial({
-// 	color:0x000000,
-// 	wireframe:false,
-// 	//opacity:0.9,
-// 	//transparent:true,
-// 	//roughness: 0.3,
-// 	//metalness: 1,
-// 	shading: THREE.SmoothShading,
-// 	//shading:THREE.FlatShading,
-// 	side:THREE.DoubleSide
-// });
-
-var material = new THREE.MeshPhongMaterial({
-	color: 0x1c1c1c,
-	side: THREE.DoubleSide,
-	roughness: 10,
-	metalness: 0.6,
-	opacity: 1,
-	transparent: true
-});
-
-let mixer = null
-
-var action;
-// load chair
-gltfLoader.load( 'chaise.glb', ( gltf ) => {
-	gltf.scene.scale.set(1,1,1)
-	scene.add( gltf.scene );
-	action = mixer.clipAction(gltf.animations[0])
-	action.setLoop( THREE.LoopOnce )
-})
-
-
-
-gltfLoader.load('threejs_colliders.glb', (gltf) => {
+gltfLoader.load('threejs_colliders_v3.glb', (gltf) => {
 
 	scene.add(gltf.scene);
+
 
 	worldOctree.fromGraphNode(gltf.scene);
 
 	gltf.scene.traverse(child => {
 
 		if (child.isMesh) {
-			child.material = material
-			// if (child.material.map) {
-
-			// 	child.material.map.anisotropy = 8;
-
-
-			// }
-			// child.material.opacity = 0.5;
-			// child.material.transparent = true;
+			child.material.opacity = 0;
+			child.material.transparent = true;
 		}
 
 	});
@@ -157,6 +146,70 @@ gltfLoader.load('threejs_colliders.glb', (gltf) => {
 	animate();
 
 });
+
+gltfLoader.load('threejs_structure_v3.glb', (gltf) => {
+
+	scene.add(gltf.scene);
+
+
+
+	gltf.scene.traverse(child => {
+
+		if (child.isMesh) {
+			child.material = wallMaterial
+			child.material.opacity = 1;
+		}
+
+	});
+
+
+})
+
+
+function getInformationFromContentMap(objectName) {
+	let result;
+	paramMap.filter(obj => {
+		if (obj.name === objectName) result = obj
+	})
+	return result;
+}
+
+/**
+ * Load insight models
+ */
+function setUpObject(object) {
+	// Get informations, using the gltf name and the content map
+	let objectParams = getInformationFromContentMap(object.scene.children[0].name);
+
+	if (objectParams) {
+		object.scene.position.copy(objectParams.position)
+		objectParams.mesh = object.scene.children[0];
+		objectParams.action = mixer.clipAction(object.animations[0], objectParams.mesh);
+		objectParams.action.setDuration(objectParams.duration);
+		objectParams.action.setLoop(THREE.LoopOnce);
+		sceneItems.push(objectParams);
+		scene.add(object.scene)
+	} else {
+		console.log("is not mesh", object.scene.children[0])
+	}
+}
+
+// load chair
+gltfLoader.load('chaise.glb', (gltf) => {
+	setUpObject(gltf);
+
+})
+
+gltfLoader.load('machine.glb', (gltf) => {
+	setUpObject(gltf);
+})
+
+// Load arrow cursor mesh
+let arrowMesh;
+gltfLoader.load('arrow.glb', (arrow) => {
+	arrowMesh = arrow.scene.children[0];
+})
+
 
 /**
  * Base
@@ -170,11 +223,11 @@ mixer = new THREE.AnimationMixer(scene)
 
 const box1 = new THREE.Mesh(
 	new THREE.BoxBufferGeometry(1, 0.75, 1),
-	material
+	wallMaterial
 )
 const box2 = new THREE.Mesh(
 	new THREE.BoxBufferGeometry(1, 1.25, 1),
-	material
+	wallMaterial
 )
 
 const planeGeometry = new THREE.PlaneBufferGeometry(3.5, 3.5);
@@ -224,23 +277,15 @@ camera.rotateY(- Math.PI * 0.5);
 
 var ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
 var lightFront = new THREE.SpotLight(0xFFFFFF, 2.04, 100);
-// var lightBack = new THREE.PointLight(0xFFFFFF, 0.5);
 
-// var spotLightHelper = new THREE.SpotLightHelper( lightFront );
-//scene.add( spotLightHelper );
-
-// lightFront.rotation.x = 45 * Math.PI / 180;
-// lightFront.rotation.z = -45 * Math.PI / 180;
 lightFront.position.set(5.2, 8.4, -3.425);
 lightFront.castShadow = true;
 lightFront.shadow.mapSize.width = 6000;
 lightFront.shadow.mapSize.height = lightFront.shadow.mapSize.width;
 lightFront.penumbra = 0.1;
-// lightBack.position.set(0,15,0);
 
 scene.add(ambientLight);
 scene.add(lightFront);
-// scene.add(lightBack);
 
 gui.add(ambientLight, 'intensity', 0, 20, 0.01)
 gui.add(lightFront, 'intensity', 0, 10, 0.01)
@@ -266,30 +311,9 @@ container.appendChild(stats.domElement);
 
 const GRAVITY = 30;
 
-const NUM_SPHERES = 20;
-const SPHERE_RADIUS = 0.2;
-
-const sphereGeometry = new THREE.SphereGeometry(SPHERE_RADIUS, 32, 32);
-const sphereMaterial = new THREE.MeshStandardMaterial({ color: 0x888855, roughness: 0.8, metalness: 0.5 });
-
-const spheres = [];
-let sphereIdx = 0;
-
-for (let i = 0; i < NUM_SPHERES; i++) {
-
-	const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-	sphere.castShadow = true;
-	sphere.receiveShadow = true;
-
-	scene.add(sphere);
-
-	spheres.push({ mesh: sphere, collider: new THREE.Sphere(new THREE.Vector3(0, - 100, 0), SPHERE_RADIUS), velocity: new THREE.Vector3() });
-
-}
-
 const worldOctree = new Octree();
 
-const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1, 0), 0.35);
+const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1.25, 0), 0.35);
 
 const playerVelocity = new THREE.Vector3();
 const playerDirection = new THREE.Vector3();
@@ -338,18 +362,7 @@ function onWindowResize() {
 
 }
 
-document.addEventListener('click', () => {
 
-	// const sphere = spheres[ sphereIdx ];
-
-	// camera.getWorldDirection( playerDirection );
-
-	// sphere.collider.center.copy( playerCollider.end );
-	// sphere.velocity.copy( playerDirection ).multiplyScalar( 30 );
-
-	// sphereIdx = ( sphereIdx + 1 ) % spheres.length;
-
-});
 
 function playerCollitions() {
 
@@ -395,71 +408,6 @@ function updatePlayer(deltaTime) {
 
 }
 
-function spheresCollisions() {
-
-	for (let i = 0; i < spheres.length; i++) {
-
-		const s1 = spheres[i];
-
-		for (let j = i + 1; j < spheres.length; j++) {
-
-			const s2 = spheres[j];
-
-			const d2 = s1.collider.center.distanceToSquared(s2.collider.center);
-			const r = s1.collider.radius + s2.collider.radius;
-			const r2 = r * r;
-
-			if (d2 < r2) {
-
-				const normal = s1.collider.clone().center.sub(s2.collider.center).normalize();
-				const v1 = normal.clone().multiplyScalar(normal.dot(s1.velocity));
-				const v2 = normal.clone().multiplyScalar(normal.dot(s2.velocity));
-				s1.velocity.add(v2).sub(v1);
-				s2.velocity.add(v1).sub(v2);
-
-				const d = (r - Math.sqrt(d2)) / 2;
-
-				s1.collider.center.addScaledVector(normal, d);
-				s2.collider.center.addScaledVector(normal, - d);
-
-			}
-
-		}
-
-	}
-
-}
-
-function updateSpheres(deltaTime) {
-
-	spheres.forEach(sphere => {
-
-		sphere.collider.center.addScaledVector(sphere.velocity, deltaTime);
-
-		const result = worldOctree.sphereIntersect(sphere.collider);
-
-		if (result) {
-
-			sphere.velocity.addScaledVector(result.normal, - result.normal.dot(sphere.velocity) * 1.5);
-			sphere.collider.center.add(result.normal.multiplyScalar(result.depth));
-
-		} else {
-
-			sphere.velocity.y -= GRAVITY * deltaTime;
-
-		}
-
-		const damping = Math.exp(- 1.5 * deltaTime) - 1;
-		sphere.velocity.addScaledVector(sphere.velocity, damping);
-
-		spheresCollisions();
-
-		sphere.mesh.position.copy(sphere.collider.center);
-
-	});
-
-}
-
 function getForwardVector() {
 
 	camera.getWorldDirection(playerDirection);
@@ -490,12 +438,12 @@ function getClosestObject() {
 
 	let closestObject = null;
 	// Maybe get element and copy position insted
-	for (let object of boxes) {
+	for (let object of sceneItems) {
 
 		// Get distance camera --> box
 		const distFromCamera = getDistanceFromVector3(object.position);
 		// Compare distance to threshold
-		if (distFromCamera < 1.5) {
+		if (distFromCamera < 2) {
 			if (closestObject === null) {
 				closestObject = object;
 				// If an obj is already stored, replace if closer
@@ -549,23 +497,24 @@ function controls(deltaTime) {
 
 			if (closestObject && canAnimate) {
 				if (!isAnimationInProgress) {
+					let animationDuration = closestObject.duration;
 
 					// Prevent from animate more than once
 					updateInsightState(true)
 					isAnimationInProgress = true
-					////play action chair
-					action.stop();
-					action.play();
 
-					// // Hide Arrows
-					// for (const arrow of arrows) {
-					// 	gsap.to(arrow.material, { duration: 0.2, opacity: 0 });
-					// }
+					//play action chair
+					closestObject.action.stop();
+					closestObject.action.play();
+
+					// Hide Arrows
+					for (const arrow of arrows) {
+						gsap.to(arrow.material, { duration: 0.2, opacity: 0 });
+					}
 
 					// const prevPosY = closestObject.mesh.position.y;
 					// gsap.to(closestObject.mesh.position, { duration: 1, y: closestObject.mesh.position.y + 2 })
 					// gsap.to(closestObject.mesh.position, { duration: 1, y: prevPosY, delay: 1 })
-
 
 
 
@@ -574,9 +523,9 @@ function controls(deltaTime) {
 
 						// Display Arrows
 						for (const arrow of arrows) {
-							gsap.to(arrow.material, { duration: 0.2, opacity: 1 });
+							gsap.to(arrow.material, { duration: 1, opacity: 1 });
 						}
-					}, 2000)
+					}, animationDuration * 1000)
 
 				} else {
 					return
@@ -669,6 +618,9 @@ function animate() {
 
 	closestObject = getClosestObject();
 
+	// if(closestObject)
+	// console.log(closestObject.mesh.position)
+
 	if (closestObject && !isAnimationInProgress && isPlayerLookingAtObject()) {
 		updateInteractionButtonState(true)
 		canAnimate = true;
@@ -679,8 +631,7 @@ function animate() {
 	}
 
 	//Calcul mixer
-	if( mixer !== null)
-	{
+	if (mixer !== null) {
 		mixer.update(deltaTime)
 	}
 
@@ -688,7 +639,7 @@ function animate() {
 
 	updatePlayer(deltaTime);
 
-	updateSpheres(deltaTime);
+	// updateSpheres(deltaTime);
 
 	animateArrows(elapsedTime);
 
