@@ -81,8 +81,8 @@ body {
     transform: translateX(-50%);
     padding: 16px;
     z-index: 2;
-    color: #000;
-    border: 1px solid #000;
+    color: #fff;
+    border: 1px solid #fff;
     opacity: 0;
     transition: opacity 0.2s;
 }
@@ -93,17 +93,40 @@ body {
 
 .insight {
     position: fixed;
-    top: 48px;
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
     width: 405px;
-    background-color: rgba(0,0,0,0.5);
-    color: white;
+    color: #fff;
     font-size: 14px;
+    line-height: 1.5;
     z-index: 2;
     padding: 16px;
     text-align: center;
     opacity: 0;
+    transition: 0.3s ease;
+}
+
+.insight.visible {
+    bottom: 48px;
+    opacity: 1;
+}
+
+.insight.visible::after {
+    content: "Press C to close";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    color: #fff;
+    font-weight: bold;
+    transform: translate(-50%, 24px);
+    font-size: 12px;
+    transition: 0.3s;
+}
+
+.insight.visible .interaction-text.visible {
+    bottom: 20%;
+    background-color: red;
 }
 
 #blocker {

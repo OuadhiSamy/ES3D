@@ -109,12 +109,12 @@ gltfLoader.load('structurev4.glb', (gltf) => {
 // });
 
 var material = new THREE.MeshPhongMaterial({
-    color:0x1c1c1c,
-    side:THREE.DoubleSide,
-    roughness: 10,
-    metalness: 0.6,
-    opacity:1,
-    transparent:true
+	color: 0x1c1c1c,
+	side: THREE.DoubleSide,
+	roughness: 10,
+	metalness: 0.6,
+	opacity: 1,
+	transparent: true
 });
 gltfLoader.load('threejs_colliders.glb', (gltf) => {
 
@@ -167,13 +167,13 @@ planeMaterial.side = THREE.DoubleSide;
 const boxes = [
 	{
 		name: "red cube",
-		mesh: box1, position: new Vector3(5, 0.75 / 2, -2), 
+		mesh: box1, position: new Vector3(5, 0.75 / 2, -2),
 		insight: "Vous insérez une pièce dans la machine et vous sélectionnez un grand café fort pour vous remettre de votre code sprint. La machine se lance, mais vous présente finalement un gobelet vide.Vous auriez mieux fait de choisir un café en intraveineuse."
 	},
-	{ 
-		name: "blue cube", 
-		mesh: box2, 
-		position: new Vector3(7, 1.25 / 2, 1.25), 
+	{
+		name: "blue cube",
+		mesh: box2,
+		position: new Vector3(7, 1.25 / 2, 1.25),
 		insight: "Vous avez une pause entre deux sessions de recherches UX, le fatboy vous fait de l’œil. Il a l'air moelleux et réconfortant. Vous vous sentez attiré(e) par son aura. Alors que vous êtes sur le point de vous laisser engloutir par la tentation, votre meilleur ami vous tapote l'épaule et vous ramène à la réalité."
 	},
 ];
@@ -520,30 +520,6 @@ function getClosestObject() {
 	return closestObject;
 }
 
-const interactionElement = document.querySelector('.interaction-text');
-function updateInteractionButtonState(visible) {
-
-	if (visible) {
-		interactionElement.classList.add('visible')
-	}
-	else {
-		interactionElement.classList.remove('visible')
-	}
-}
-
-const insightElement = document.querySelector('.insight');
-function displayInsight() {
-	// Get insight content
-	insightElement.innerHTML = closestObject.insight;
-
-	//Display Text
-	gsap.to('.insight', {opacity: 1, duration: 0.3})
-	
-	//Hide Text
-	gsap.to('.insight', {opacity: 0, duration: 0.3, delay: 2})
-	// Clear
-	insightElement.insight = '';
-}
 
 function controls(deltaTime) {
 
@@ -587,17 +563,19 @@ function controls(deltaTime) {
 				if (!isAnimationInProgress) {
 
 					// Prevent from animate more than once
-					displayInsight()
+					updateInsightState(true)
 					isAnimationInProgress = true
-					
-					// Hide Arrows
-					for (const arrow of arrows) {
-						gsap.to(arrow.material, { duration: 0.2, opacity: 0 });
-					}
 
-					const prevPosY = closestObject.mesh.position.y;
-					gsap.to(closestObject.mesh.position, { duration: 1, y: closestObject.mesh.position.y + 2 })
-					gsap.to(closestObject.mesh.position, { duration: 1, y: prevPosY, delay: 1 })
+					// // Hide Arrows
+					// for (const arrow of arrows) {
+					// 	gsap.to(arrow.material, { duration: 0.2, opacity: 0 });
+					// }
+
+					// const prevPosY = closestObject.mesh.position.y;
+					// gsap.to(closestObject.mesh.position, { duration: 1, y: closestObject.mesh.position.y + 2 })
+					// gsap.to(closestObject.mesh.position, { duration: 1, y: prevPosY, delay: 1 })
+
+
 
 
 					setTimeout(() => {
@@ -616,9 +594,59 @@ function controls(deltaTime) {
 
 		}
 
+		if (keyStates['KeyC']) {
+			closeInsight()
+		}
+
 	}
 
 }
+
+const interactionElement = document.querySelector('.interaction-text');
+function updateInteractionButtonState(visible) {
+
+	if (visible) {
+		interactionElement.classList.add('visible')
+	}
+	else {
+		interactionElement.classList.remove('visible')
+	}
+}
+
+const insightElement = document.querySelector('.insight');
+function updateInsightState(visible) {
+
+	if (visible) {
+		if (insightElement.innerHTML.length > 0) {
+			insightElement.classList.remove('visible');
+			setTimeout(() => {
+				//Avoid clear text before element not visible
+				insightElement.innerHTML = '';
+			}, 300)
+
+			setTimeout(() => {
+				insightElement.classList.add('visible')
+				insightElement.innerHTML = closestObject.insight;
+			}, 900)
+
+		} else {
+			insightElement.classList.add('visible')
+			insightElement.innerHTML = closestObject.insight;
+		}
+
+	} else {
+		insightElement.classList.remove('visible')
+		insightElement.innerHTML = '';
+	}
+}
+function closeInsight() {
+	insightElement.classList.remove('visible')
+	setTimeout(() => {
+		//Avoid clear text before element not visible
+		insightElement.innerHTML = '';
+	}, 300)
+}
+
 
 function animateArrows(elapsedTime) {
 	for (const arrow of arrows) {
