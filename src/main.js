@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as dat from 'dat.gui'
+import {Howl, Howler} from 'howler';
 //import gsap from 'gsap'
 
 
@@ -73,6 +74,26 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 			const spheres = [];
 			let sphereIdx = 0;
 
+			let soundMuted = 0;
+			/**
+			 * Loaders
+			 */
+
+			const sound = new Howl({
+				src: ['sounds/spacefunk.mp3'],
+				loop: true,
+				volume: 0.08,
+				autoplay:true,
+				preload:true
+			});
+				sound.play();
+			
+			const cafe = new Howl({
+				src: ['sounds/coffee.mp3'],
+				volume:0.3
+			});
+
+
 			//Start Menu
 			const startButton = document.getElementById('start-btn')
 
@@ -129,7 +150,6 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 			const keyStates = {};
 			console.log(document.pointerLockElement)
-			
 
 			document.addEventListener( 'keydown', ( event ) => {
 
@@ -150,6 +170,21 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 					
 
 				}
+
+				keyStates[ event.code ] = true;
+			
+				if ( keyStates['Semicolon'] ) {
+				  if ( soundMuted == 0 ) {
+				  sound.pause();
+				  soundMuted = 1;
+				  console.log('mute')
+				  }
+				  else{
+					  sound.play();
+					  soundMuted = 0
+					  console.log('unmute') 
+					}
+			  };
 
 			} );
 
