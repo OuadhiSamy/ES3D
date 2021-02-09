@@ -73,7 +73,35 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 			const spheres = [];
 			let sphereIdx = 0;
 
-			document.body.requestPointerLock();
+			//Start Menu
+			const startButton = document.getElementById('start-btn')
+
+			const startMenu = document.getElementById( 'start-screen' );
+			let startDisplay = 1
+
+			startButton.addEventListener("click", ( event ) => {
+				document.body.requestPointerLock()
+				startDisplay = 0
+				startMenu.style.display = 'none';
+				console.log('test')
+			})
+
+			//Menu Pause
+			const overlay = document.getElementById( 'overlay' );
+			let overlayDisplay = 1
+
+			//Equalizer
+			const eq = document.getElementById('equalizer')
+			const eqBars = document.getElementsByClassName('eq-unmute')
+			console.log('Bar:' + eqBars)
+			
+			eq.addEventListener("click", ( event ) => {
+				eq.classList.toggle('mute')
+			})
+
+
+
+			// document.body.requestPointerLock();
 
 			//document.body.innerHTML = document.body.innerHTML + '<div id="blocker"><div id="instructions"><span style="font-size:36px">Click to play</span><br /><br />Move: ZQSD<br/>Jump: SPACE<br/>Look: MOUSE</div></div>'
 			//document.body.innerHTML = document.body.innerHTML + '<div class="gui"><div class="hud-layer"><div class="crosshair"><img src="/images/crosshair.svg" class="image"></div></div></div>'
@@ -111,12 +139,12 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 					if(document.pointerLockElement === null)
 					{
 						document.body.requestPointerLock()
-						overlayDisplay = 0
+						overlayDisplay = 1
 						overlay.style.display = 'none';
 					}
 					else{
 						document.exitPointerLock();
-						overlayDisplay = 1
+						overlayDisplay = 0
 						overlay.style.display = 'flex';
 					}
 					
@@ -160,15 +188,12 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 			}
 
 			document.addEventListener( 'click', () => {
-
-				// const sphere = spheres[ sphereIdx ];
-
-				// camera.getWorldDirection( playerDirection );
-
-				// sphere.collider.center.copy( playerCollider.end );
-				// sphere.velocity.copy( playerDirection ).multiplyScalar( 30 );
-
-				// sphereIdx = ( sphereIdx + 1 ) % spheres.length;
+				console.log('onclick')
+				if(overlayDisplay == 1)
+				{
+					console.log('onclick request')
+					document.body.requestPointerLock()
+				}
 
 			} );
 
@@ -216,76 +241,7 @@ import { Capsule } from 'three/examples/jsm/math/Capsule.js';
 
 			}
 
-			function spheresCollisions() {
-
-				for ( let i = 0; i < spheres.length; i ++ ) {
-
-					const s1 = spheres[ i ];
-
-					for ( let j = i + 1; j < spheres.length; j ++ ) {
-
-						const s2 = spheres[ j ];
-
-						const d2 = s1.collider.center.distanceToSquared( s2.collider.center );
-						const r = s1.collider.radius + s2.collider.radius;
-						const r2 = r * r;
-
-						if ( d2 < r2 ) {
-
-							const normal = s1.collider.clone().center.sub( s2.collider.center ).normalize();
-							const v1 = normal.clone().multiplyScalar( normal.dot( s1.velocity ) );
-							const v2 = normal.clone().multiplyScalar( normal.dot( s2.velocity ) );
-							s1.velocity.add( v2 ).sub( v1 );
-							s2.velocity.add( v1 ).sub( v2 );
-
-							const d = ( r - Math.sqrt( d2 ) ) / 2;
-
-							s1.collider.center.addScaledVector( normal, d );
-							s2.collider.center.addScaledVector( normal, - d );
-
-						}
-
-					}
-
-				}
-
-			}
-
 			
-			const overlay = document.getElementById( 'overlay' );
-			let overlayDisplay = 1
-
-
-			function updateSpheres( deltaTime ) {
-
-				spheres.forEach( sphere =>{
-
-					sphere.collider.center.addScaledVector( sphere.velocity, deltaTime );
-
-					const result = worldOctree.sphereIntersect( sphere.collider );
-
-					if ( result ) {
-
-						sphere.velocity.addScaledVector( result.normal, - result.normal.dot( sphere.velocity ) * 1.5 );
-						sphere.collider.center.add( result.normal.multiplyScalar( result.depth ) );
-
-					} else {
-
-						sphere.velocity.y -= GRAVITY * deltaTime;
-
-					}
-
-					const damping = Math.exp( - 1.5 * deltaTime ) - 1;
-					sphere.velocity.addScaledVector( sphere.velocity, damping );
-
-					spheresCollisions();
-
-					sphere.mesh.position.copy( sphere.collider.center );
-
-				} );
-
-			}
-
 			function getForwardVector() {
 
 				camera.getWorldDirection( playerDirection );
@@ -515,8 +471,6 @@ var test
 				controls( deltaTime );
 
 				updatePlayer( deltaTime );
-
-				updateSpheres( deltaTime );
 
 				//Calcule animation de la chaise
 				if( mixer !== null)

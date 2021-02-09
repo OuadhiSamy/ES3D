@@ -1,14 +1,43 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESD - 3D Experience</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESD - 3D Experience</title>
 </head>
+
 <body>
-    <div id="info">Octree threejs demo - basic collisions with static triangle mesh<br />WASD to move, space to jump, use mouse to throw balls and move the camera.</div>
-    <div id="container"></div>
-    <div id="overlay">Test</div>
-    <div class="gui"><div class="hud-layer"><div class="crosshair"><img src="/images/crosshair.svg" class="image"></div></div></div>
+  <div id="info">Octree threejs demo - basic collisions with static triangle mesh<br />WASD to move, space to jump, use
+    mouse to throw balls and move the camera.</div>
+  <div id="container"></div>
+
+
+  <div id="overlay">Test</div>
+  <div id="start-screen"><img src="/images/Logo.png" class="image"><br />
+    <!-- <button id="cybr-btn">
+        Start<span aria-hidden class="cybr-btn__glitch">Start</span>
+      </button> -->
+    <button class="cyber-btn" id="start-btn">
+      Démarrer
+    </button>
+  </div>
+  <div class="gui">
+    <div class="hud-layer">
+      <button id="equalizer">
+        <span id="eq1" class="eq-unmute"></span>
+        <span id="eq2" class="eq-unmute"></span>
+        <span id="eq3" class="eq-unmute"></span>
+        <span id="eq4" class="eq-unmute"></span>
+        <div id="eqShortcut">[M]</div>
+      </button>
+      <button id="pauseBtn">
+        <span id="pause-icon"></span>
+        <div id="pauseShortcut">[P]</div>
+      </button>
+      <div class="crosshair"><img src="/images/crosshair.svg" class="image"></div>
+    </div>
+  </div>
 </body>
+
 </html>
