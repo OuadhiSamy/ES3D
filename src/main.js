@@ -617,21 +617,26 @@ const insightElement = document.querySelector('.insight');
 function updateInsightState(visible) {
 
 	if (visible) {
+
+		//Store insight to avoid losing insight if player go away during transition states
+		let insight = closestObject.insight;
+
+
 		if (insightElement.innerHTML.length > 0) {
 			insightElement.classList.remove('visible');
 			setTimeout(() => {
-				//Avoid clear text before element not visible
+				// Avoid clearing text before element not visible
 				insightElement.innerHTML = '';
 			}, 300)
 
 			setTimeout(() => {
 				insightElement.classList.add('visible')
-				insightElement.innerHTML = closestObject.insight;
+				insightElement.innerHTML = insight;
 			}, 900)
 
 		} else {
 			insightElement.classList.add('visible')
-			insightElement.innerHTML = closestObject.insight;
+			insightElement.innerHTML = insight;
 		}
 
 	} else {
