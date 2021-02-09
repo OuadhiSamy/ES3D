@@ -91,11 +91,31 @@ gltfLoader.load('structurev4.glb', (gltf) => {
 
 		// Math.random to avoid z-fighting if plane are overlaping
 		plane.position.y = 0.025 + (Math.random() * 0.01)
-		scene.add(plane)
+		// scene.add(plane)
 	}
 
 })
 
+// let material = new THREE.MeshStandardMaterial({
+// 	color:0x000000,
+// 	wireframe:false,
+// 	//opacity:0.9,
+// 	//transparent:true,
+// 	//roughness: 0.3,
+// 	//metalness: 1,
+// 	shading: THREE.SmoothShading,
+// 	//shading:THREE.FlatShading,
+// 	side:THREE.DoubleSide
+// });
+
+var material = new THREE.MeshPhongMaterial({
+    color:0x1c1c1c,
+    side:THREE.DoubleSide,
+    roughness: 10,
+    metalness: 0.6,
+    opacity:1,
+    transparent:true
+});
 gltfLoader.load('threejs_colliders.glb', (gltf) => {
 
 	scene.add(gltf.scene);
@@ -105,15 +125,15 @@ gltfLoader.load('threejs_colliders.glb', (gltf) => {
 	gltf.scene.traverse(child => {
 
 		if (child.isMesh) {
+			child.material = material
+			// if (child.material.map) {
 
-			if (child.material.map) {
-
-				child.material.map.anisotropy = 8;
+			// 	child.material.map.anisotropy = 8;
 
 
-			}
-			child.material.opacity = 0.5;
-			child.material.transparent = true;
+			// }
+			// child.material.opacity = 0.5;
+			// child.material.transparent = true;
 		}
 
 	});
@@ -133,11 +153,11 @@ scene.background = new THREE.Color(0x88ccff);
 
 const box1 = new THREE.Mesh(
 	new THREE.BoxBufferGeometry(1, 0.75, 1),
-	new THREE.MeshPhysicalMaterial({ color: "red" })
+	material
 )
 const box2 = new THREE.Mesh(
 	new THREE.BoxBufferGeometry(1, 1.25, 1),
-	new THREE.MeshPhysicalMaterial({ color: "blue" })
+	material
 )
 
 const planeGeometry = new THREE.PlaneBufferGeometry(3.5, 3.5);
@@ -185,31 +205,60 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.rotation.order = 'YXZ';
 camera.rotateY(- Math.PI * 0.5);
 
-const ambientlight = new THREE.AmbientLight(0x6688cc);
-scene.add(ambientlight);
+/**
+ * Lights
+ */
+// const ambientlight = new THREE.AmbientLight(0x6688cc);
+// scene.add(ambientlight);
 
-const fillLight1 = new THREE.DirectionalLight(0xff9999, 0.5);
-fillLight1.position.set(- 1, 1, 2);
-scene.add(fillLight1);
+// const fillLight1 = new THREE.DirectionalLight(0xff9999, 0.5);
+// fillLight1.position.set(- 1, 1, 2);
+// scene.add(fillLight1);
 
-const fillLight2 = new THREE.DirectionalLight(0x8888ff, 0.2);
-fillLight2.position.set(0, - 1, 0);
-scene.add(fillLight2);
+// const fillLight2 = new THREE.DirectionalLight(0x8888ff, 0.2);
+// fillLight2.position.set(0, - 1, 0);
+// scene.add(fillLight2);
 
-const directionalLight = new THREE.DirectionalLight(0xffffaa, 1.2);
-directionalLight.position.set(- 5, 25, - 1);
-directionalLight.castShadow = true;
-directionalLight.shadow.camera.near = 0.01;
-directionalLight.shadow.camera.far = 500;
-directionalLight.shadow.camera.right = 30;
-directionalLight.shadow.camera.left = - 30;
-directionalLight.shadow.camera.top = 30;
-directionalLight.shadow.camera.bottom = - 30;
-directionalLight.shadow.mapSize.width = 1024;
-directionalLight.shadow.mapSize.height = 1024;
-directionalLight.shadow.radius = 4;
-directionalLight.shadow.bias = - 0.00006;
-scene.add(directionalLight);
+// const directionalLight = new THREE.DirectionalLight(0xffffaa, 1.2);
+// directionalLight.position.set(- 5, 25, - 1);
+// directionalLight.castShadow = true;
+// directionalLight.shadow.camera.near = 0.01;
+// directionalLight.shadow.camera.far = 500;
+// directionalLight.shadow.camera.right = 30;
+// directionalLight.shadow.camera.left = - 30;
+// directionalLight.shadow.camera.top = 30;
+// directionalLight.shadow.camera.bottom = - 30;
+// directionalLight.shadow.mapSize.width = 1024;
+// directionalLight.shadow.mapSize.height = 1024;
+// directionalLight.shadow.radius = 4;
+// directionalLight.shadow.bias = - 0.00006;
+// scene.add(directionalLight);
+
+var ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
+var lightFront = new THREE.SpotLight(0xFFFFFF, 2.04, 100);
+// var lightBack = new THREE.PointLight(0xFFFFFF, 0.5);
+
+// var spotLightHelper = new THREE.SpotLightHelper( lightFront );
+//scene.add( spotLightHelper );
+
+// lightFront.rotation.x = 45 * Math.PI / 180;
+// lightFront.rotation.z = -45 * Math.PI / 180;
+lightFront.position.set(5.2, 8.4, -3.425);
+lightFront.castShadow = true;
+lightFront.shadow.mapSize.width = 6000;
+lightFront.shadow.mapSize.height = lightFront.shadow.mapSize.width;
+lightFront.penumbra = 0.1;
+// lightBack.position.set(0,15,0);
+
+scene.add(ambientLight);
+scene.add(lightFront);
+// scene.add(lightBack);
+
+gui.add(ambientLight, 'intensity', 0, 20, 0.01)
+gui.add(lightFront, 'intensity', 0, 10, 0.01)
+gui.add(lightFront.position, 'x', -25, 25, 0.001)
+gui.add(lightFront.position, 'y', -25, 25, 0.001)
+gui.add(lightFront.position, 'z', -25, 25, 0.001)
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
