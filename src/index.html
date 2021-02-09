@@ -4,24 +4,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
   <title>ESD - 3D Experience</title>
 </head>
 
 <body>
-  <div id="info">Octree threejs demo - basic collisions with static triangle mesh<br />WASD to move, space to jump, use
-    mouse to throw balls and move the camera.</div>
+  <!-- <div id="info">Octree threejs demo - basic collisions with static triangle mesh<br />WASD to move, space to jump, use
+    mouse to throw balls and move the camera.</div> -->
   <div id="container"></div>
 
 
-  <div id="overlay">Test</div>
-  <div id="start-screen"><img src="/images/Logo.png" class="image"><br />
+  <div id="overlay">
+    <div id="pause-menu">
+      <h2>Pause</h2>
+      <div class="pause-container">
+        <div class="version-info">V18.9483</div>
+        <div class="panel panel-left">
+          <button class="cyber-btn" class="test-btn">
+            <span aria-hidden class="cybr-btn__glitch">Reprendre</span>
+          </button>
+          <button class="cyber-btn" class="test-btn">
+            <span aria-hidden class="cybr-btn__glitch">Quitter</span>
+          </button>
+        </div>
+        <div class="separator"></div>
+        <div class="panel panel-right">
+          <h3>Raccourcis</h3>
+          <img src="/images/shortcuts.svg" class="image">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="start-screen">
+      <div id="logo-txt">
+        <h1 id="title-logo" data-text="ESD3D">ESD3D</h1>
+        <!-- <h1 id="superposed">ESD3D</h1> -->
+        <h2 id="subtitle-logo" data-text="XPERIENCE">XPERIENCE</h2>
+      </div>
+      <button class="cyber-btn" id="start-btn">
+        <span aria-hidden class="cybr-btn__glitch">Démarrer</span>
+      </button>
+    </div>
     <!-- <button id="cybr-btn">
         Start<span aria-hidden class="cybr-btn__glitch">Start</span>
       </button> -->
-    <button class="cyber-btn" id="start-btn">
-      Démarrer
-    </button>
-  </div>
+  
   <div class="gui">
     <div class="hud-layer">
       <button id="equalizer">
@@ -32,7 +60,7 @@
         <div id="eqShortcut">[M]</div>
       </button>
       <button id="pauseBtn">
-        <span id="pause-icon"></span>
+        <span id="pause-icon">▌▌</span>
         <div id="pauseShortcut">[P]</div>
       </button>
       <div class="crosshair"><img src="/images/crosshair.svg" class="image"></div>

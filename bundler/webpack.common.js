@@ -60,7 +60,7 @@ module.exports = {
                 use:
                 [
                     {
-                        loader: 'file-loader',
+                        loader: 'url-loader',
                         options:
                         {
                             outputPath: 'assets/images/'
@@ -75,7 +75,7 @@ module.exports = {
                 use:
                 [
                     {
-                        loader: 'file-loader',
+                        loader: 'url-loader',
                         options:
                         {
                             outputPath: 'assets/fonts/'
