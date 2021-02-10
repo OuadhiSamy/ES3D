@@ -59,11 +59,13 @@ body {
 }
 
 .progress-container > .progress-bar {
-    height: 2px;
-    background-color: #fff;
+    border: 3px solid rgb(203, 107, 248);
+    background-color: rgb(134, 134, 134);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.5s;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgb(203, 107, 248);
 }
 
 .progress-container > .progress-text {
@@ -98,11 +100,15 @@ body {
     left: 50%;
     transform: translateX(-50%);
     padding: 16px;
+    font-size: 18px;
     z-index: 2;
-    color: #fff;
-    border: 1px solid #fff;
+    transition: 0.4s ease;
+    font-weight: 500;
+    color: #dfffff;
+    border: 1px solid rgb(72 247 230 / 46%);
     opacity: 0;
-    transition: 0.3s ease;
+    box-shadow: 0 0 10px #3fdcce33;
+    font-family: 'Nunito Sans';
 }
 
 .interaction-text.visible {
@@ -118,13 +124,15 @@ body {
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 405px;
+    width: 45%;
+    max-width: 515px;
     color: #fff;
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.5;
     z-index: 2;
     padding: 16px;
-    text-align: center;
+    font-family: 'Nunito Sans';
+    text-align: left;
     opacity: 0;
     transition: 0.3s ease;
 }
@@ -349,7 +357,7 @@ select {
 #overlay {
     position: absolute;
     font-size: 16px;
-    z-index: 2;
+    z-index: 150;
     top: 0;
     left: 0;
     width: 100%;
@@ -401,7 +409,7 @@ select {
 
 #pause-menu h2 {
     margin-bottom: 32px;
-    top: 50px;
+    top: 2vh;
     font-size: 40px;
     position: relative;
     text-transform: uppercase;
@@ -458,9 +466,9 @@ select {
 
 .separator {
     height: 70%;
-    border: 2px solid #cc33d8;
+    border: 2px solid #ffffff;
     border-radius: 5px;
-    box-shadow: 0 0 10px #cc33d8;
+    box-shadow: 0 0 10px #ffffff;
 }
 
 #blocker {
@@ -785,7 +793,7 @@ button {
 }
 
 #equalizer #eqShortcut,
-#pauseBtn #pauseShortcut {
+#pause-btn #pauseShortcut {
     margin-left: 16px;
     width: 30px;
     background-color: transparent;
