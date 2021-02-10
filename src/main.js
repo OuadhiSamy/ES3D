@@ -39,17 +39,17 @@ let soundMuted = 0;
  */
 
 const sound = new Howl({
-  src: ["sounds/spacefunk.mp3"],
-  loop: true,
-  volume: 0.08,
-  autoplay: true,
-  preload: true,
+	src: ["sounds/spacefunk.mp3"],
+	loop: true,
+	volume: 0.08,
+	autoplay: true,
+	preload: true,
 });
 sound.play();
 
 const cafe = new Howl({
-  src: ["sounds/coffee.mp3"],
-  volume: 0.3,
+	src: ["sounds/coffee.mp3"],
+	volume: 0.3,
 });
 
 //Equalizer
@@ -57,16 +57,16 @@ const eq = document.getElementById("equalizer");
 const eqBars = document.getElementsByClassName("eq-unmute");
 
 eq.addEventListener("click", (event) => {
-  eq.classList.toggle("mute");
-  if (soundMuted == 0) {
-    sound.pause();
-    soundMuted = 1;
-    console.log("mute");
-  } else {
-    sound.play();
-    soundMuted = 0;
-    console.log("unmute");
-  }
+	eq.classList.toggle("mute");
+	if (soundMuted == 0) {
+		sound.pause();
+		soundMuted = 1;
+		console.log("mute");
+	} else {
+		sound.play();
+		soundMuted = 0;
+		console.log("unmute");
+	}
 });
 
 //Pause
@@ -77,79 +77,79 @@ const quitBtn = document.getElementById("quit-btn");
 pauseBtn.style.visibility = "hidden";
 
 pauseBtn.addEventListener("click", (event) => {
-    if (document.pointerLockElement === null) {
+	if (document.pointerLockElement === null) {
 		document.body.requestPointerLock();
 		overlayDisplay = 1;
 		overlay.style.display = "none";
-	  } else {
+	} else {
 		document.exitPointerLock();
 		overlayDisplay = 0;
 		overlay.style.display = "flex";
-	  }
-  });
+	}
+});
 
-  closeBtn.addEventListener("click", (event) => {
-    if (document.pointerLockElement === null) {
+closeBtn.addEventListener("click", (event) => {
+	if (document.pointerLockElement === null) {
 		document.body.requestPointerLock();
 		overlayDisplay = 1;
 		overlay.style.display = "none";
-	  } else {
+	} else {
 		document.exitPointerLock();
 		overlayDisplay = 0;
 		overlay.style.display = "flex";
-	  }
-  });
+	}
+});
 
-  quitBtn.addEventListener("click", (event) => {
-    //Code pour reset la partie
-  });
+quitBtn.addEventListener("click", (event) => {
+	//Code pour reset la partie
+});
 
 //Start Menu
 const startButton = document.getElementById("start-btn");
-
 const startMenu = document.getElementById("start-screen");
 let startDisplay = 1;
 
 startButton.addEventListener("click", (event) => {
-  document.body.requestPointerLock();
-  startDisplay = 0;
-  startMenu.style.display = "none";
-  pauseBtn.style.visibility = "visible";
+	document.body.requestPointerLock();
+	startDisplay = 0;
+	initLoading();
+	startMenu.style.display = "none";
+	pauseBtn.style.visibility = "visible";
 });
 
 //Menu Pause
 const overlay = document.getElementById("overlay");
 let overlayDisplay = 1;
 
-document.addEventListener("keydown", (event) => {
-  keyStates[event.code] = true;
+document.addEventListener("keyup", (event) => {
+	keyStates[event.code] = true;
 
-  if (keyStates["KeyP"]) {
-    if (document.pointerLockElement === null) {
-      document.body.requestPointerLock();
-      overlayDisplay = 1;
-      overlay.style.display = "none";
-    } else {
-      document.exitPointerLock();
-      overlayDisplay = 0;
-      overlay.style.display = "flex";
-    }
-  }
+	if (keyStates["KeyP"]) {
+		if (document.pointerLockElement === null) {
+			document.body.requestPointerLock();
+			overlayDisplay = 1;
+			overlay.style.display = "none";
+		} else {
+			document.exitPointerLock();
+			overlayDisplay = 0;
+			overlay.style.display = "flex";
+		}
+	}
 
-  keyStates[event.code] = true;
+	keyStates[event.code] = true;
 
-  if (keyStates["Semicolon"]) {
-    eq.classList.toggle("mute");
-    if (soundMuted == 0) {
-      sound.pause();
-      soundMuted = 1;
-      console.log("mute");
-    } else {
-      sound.play();
-      soundMuted = 0;
-      console.log("unmute");
-    }
-  }
+	if (keyStates["Semicolon"]) {
+		eq.classList.toggle("mute");
+		if (soundMuted == 0) {
+			sound.pause();
+			soundMuted = 1;
+			console.log("mute");
+		} else {
+			sound.play();
+			soundMuted = 0;
+			console.log("unmute");
+		}
+	}
 });
 
 /**
@@ -253,6 +253,12 @@ const loadingManager = new THREE.LoadingManager(
 			// // Math.random to avoid z-fighting if plane are overlaping
 			// plane.position.y = 0.025 + (Math.random() * 0.01)
 			// scene.add(plane)
+
+			document.body.requestPointerLock();
+
+
+			animate();
+
 		}
 
 
@@ -267,48 +273,69 @@ const loadingManager = new THREE.LoadingManager(
 )
 
 const textureLoader = new THREE.TextureLoader(loadingManager);
-const planeTexture = textureLoader.load('textures/circle.png');
+// const planeTexture = textureLoader.load('textures/circle.png');
 
 const gltfLoader = new GLTFLoader(loadingManager).setPath('./models/');
 
-gltfLoader.load('threejs_colliders_v3.glb', (gltf) => {
+let arrowMesh;
+function initLoading() {
+	
+	// Load structures
+	gltfLoader.load('threejs_colliders_v3.glb', (gltf) => {
 
-	scene.add(gltf.scene);
+		scene.add(gltf.scene);
+		worldOctree.fromGraphNode(gltf.scene);
 
+		gltf.scene.traverse(child => {
+			if (child.isMesh) {
+				child.material.opacity = 0;
+				child.material.transparent = true;
+			}
+		});
 
-	worldOctree.fromGraphNode(gltf.scene);
-
-	gltf.scene.traverse(child => {
-
-		if (child.isMesh) {
-			child.material.opacity = 0;
-			child.material.transparent = true;
-		}
 
 	});
 
-	animate();
+	gltfLoader.load('threejs_structure_v3.glb', (gltf) => {
 
-});
+		scene.add(gltf.scene);
 
-gltfLoader.load('threejs_structure_v3.glb', (gltf) => {
-
-	scene.add(gltf.scene);
-
-
-
-	gltf.scene.traverse(child => {
-
-		if (child.isMesh) {
-			child.material = wallMaterial
-			child.material.opacity = 1;
-		}
-
-	});
+		gltf.scene.traverse(child => {
+			if (child.isMesh) {
+				child.material = wallMaterial
+				child.material.opacity = 1;
+			}
+		});
+	})
 
 
-})
+	// load animated models
+	gltfLoader.load('chaise.glb', (gltf) => {
+		setUpObject(gltf);
 
+	})
+
+	gltfLoader.load('machine.glb', (gltf) => {
+		setUpObject(gltf);
+	})
+
+	gltfLoader.load('fatboy.glb', (gltf) => {
+		setUpObject(gltf);
+	})
+
+	gltfLoader.load('ascenseur.glb', (gltf) => {
+		setUpObject(gltf);
+	})
+
+	gltfLoader.load('multiprise.gltf', (gltf) => {
+		setUpObject(gltf);
+	})
+
+	// Load arrow cursor mesh
+	gltfLoader.load('arrow.glb', (arrow) => {
+		arrowMesh = arrow.scene.children[0];
+	})
+}
 
 function getInformationFromContentMap(objectName) {
 	let result;
@@ -339,35 +366,6 @@ function setUpObject(object) {
 	}
 }
 
-// load chair
-gltfLoader.load('chaise.glb', (gltf) => {
-	setUpObject(gltf);
-
-})
-
-gltfLoader.load('machine.glb', (gltf) => {
-	setUpObject(gltf);
-})
-
-gltfLoader.load('fatboy.glb', (gltf) => {
-	setUpObject(gltf);
-})
-
-gltfLoader.load('ascenseur.glb', (gltf) => {
-	setUpObject(gltf);
-})
-
-gltfLoader.load('multiprise.gltf', (gltf) => {
-	console.log(gltf)
-	setUpObject(gltf);
-})
-
-// Load arrow cursor mesh
-let arrowMesh;
-gltfLoader.load('arrow.glb', (arrow) => {
-	arrowMesh = arrow.scene.children[0];
-})
-
 
 /**
  * Base
@@ -378,19 +376,9 @@ scene.background = new THREE.Color(0x88ccff);
 
 mixer = new THREE.AnimationMixer(scene)
 
-
-const box1 = new THREE.Mesh(
-	new THREE.BoxBufferGeometry(1, 0.75, 1),
-	wallMaterial
-)
-const box2 = new THREE.Mesh(
-	new THREE.BoxBufferGeometry(1, 1.25, 1),
-	wallMaterial
-)
-
-const planeGeometry = new THREE.PlaneBufferGeometry(3.5, 3.5);
-const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture })
-planeMaterial.side = THREE.DoubleSide;
+// const planeGeometry = new THREE.PlaneBufferGeometry(3.5, 3.5);
+// const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture })
+// planeMaterial.side = THREE.DoubleSide;
 
 
 /**
@@ -472,7 +460,7 @@ document.addEventListener('keyup', (event) => {
 
 document.addEventListener('mousedown', () => {
 
-	document.body.requestPointerLock();
+	if (overlayDisplay === 0) document.body.requestPointerLock();
 
 });
 
@@ -741,7 +729,7 @@ function animateArrows(elapsedTime) {
 	}
 }
 
-function isPlayerLookingAtObject(deltaTime) {
+function isPlayerLookingAtObject() {
 	if (closestObject) {
 		positionScreenSpace.copy(closestObject.position).project(camera);
 		positionScreenSpace.setZ(0);
@@ -758,9 +746,6 @@ function animate() {
 	updatePositionHelper();
 
 	closestObject = getClosestObject();
-
-	// if(closestObject)
-	// console.log(closestObject.mesh.position)
 
 	if (closestObject && !isAnimationInProgress && isPlayerLookingAtObject()) {
 		updateInteractionButtonState(true)
@@ -779,8 +764,6 @@ function animate() {
 	controls(deltaTime);
 
 	updatePlayer(deltaTime);
-
-	// updateSpheres(deltaTime);
 
 	animateArrows(elapsedTime);
 
