@@ -1,11 +1,90 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
     <title>ESD - 3D Experience</title>
 </head>
+
 <body>
+<<<<<<< HEAD
     <canvas class="webgl"></canvas>
+=======
+    <div id="container"></div>
+    <div id="overlay">
+        <div id="pause-menu">
+            <h2>Pause</h2>
+            <div class="pause-container">
+                <div class="version-info">V18.9483</div>
+                <div class="panel panel-left">
+                    <button class="cyber-btn" id="close-btn">
+                        Reprendre
+                    </button>
+                    <button class="cyber-btn" id="quit-btn">
+                        Quitter
+                    </button>
+                </div>
+                <div class="separator"></div>
+                <div class="panel panel-right">
+                    <h3>Raccourcis</h3>
+                    <img src="/images/shortcuts.svg" class="image">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="start-screen">
+        <div id="logo-txt">
+            <h1 id="title-logo" data-text="ESD3D">ESD3D</h1>
+            <!-- <h1 id="superposed">ESD3D</h1> -->
+            <h2 id="subtitle-logo" data-text="XPERIENCE">XPERIENCE</h2>
+        </div>
+        <button class="cyber-btn" id="start-btn">
+            <span aria-hidden class="cybr-btn__glitch">Démarrer</span>
+        </button>
+    </div>
+    <!-- <button id="cybr-btn">
+        Start<span aria-hidden class="cybr-btn__glitch">Start</span>
+      </button> -->
+
+    <div class="gui">
+        <div class="hud-layer">
+            <button id="equalizer">
+                <span id="eq1" class="eq-unmute"></span>
+                <span id="eq2" class="eq-unmute"></span>
+                <span id="eq3" class="eq-unmute"></span>
+                <span id="eq4" class="eq-unmute"></span>
+                <div id="eqShortcut">[M]</div>
+            </button>
+            <button id="pause-btn">
+                <span id="pause-icon">▌▌</span>
+                <div id="pauseShortcut">[P]</div>
+            </button>
+            <div class="crosshair"><img src="/images/crosshair.svg" class="image"></div>
+        </div>
+    </div>
+    <div class="loading-overlay">
+        <div class="progress-container">
+            <div class="progress-text"></div>
+            <div class="progress-bar"></div>
+        </div>
+    </div>
+    <!-- Interaction overlay -->
+    <div class="interaction-text">Appuyer sur E pour interagir</div>
+
+    <!-- Insight story overlay -->
+    <div class="insight"></div>
+
+    <!-- Position display helper -->
+    <div class="position-helper">
+        <div class="position positionX"></div>
+        <div class="position positionY"></div>
+        <div class="position positionZ"></div>
+    </div>
+    <!-- <div id="container"></div> -->
+>>>>>>> Overlay_Interaction
 </body>
+
 </html>

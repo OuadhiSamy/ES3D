@@ -20,7 +20,7 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, '../src/index.html'),
-            minify: true
+            minify: false
         }),
         new MiniCSSExtractPlugin()
     ],
@@ -60,7 +60,7 @@ module.exports = {
                 use:
                 [
                     {
-                        loader: 'file-loader',
+                        loader: 'url-loader',
                         options:
                         {
                             outputPath: 'assets/images/'
@@ -75,7 +75,7 @@ module.exports = {
                 use:
                 [
                     {
-                        loader: 'file-loader',
+                        loader: 'url-loader',
                         options:
                         {
                             outputPath: 'assets/fonts/'
