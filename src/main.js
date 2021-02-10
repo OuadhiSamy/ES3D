@@ -121,7 +121,10 @@ eq.addEventListener("click", (event) => {
 });
 
 //Pause
-const pauseBtn = document.getElementById("pauseBtn");
+const pauseBtn = document.getElementById("pause-btn");
+const closeBtn = document.getElementById("close-btn");
+const quitBtn = document.getElementById("quit-btn");
+
 pauseBtn.style.visibility = "hidden";
 
 pauseBtn.addEventListener("click", (event) => {
@@ -134,6 +137,22 @@ pauseBtn.addEventListener("click", (event) => {
 		overlayDisplay = 0;
 		overlay.style.display = "flex";
 	  }
+  });
+
+  closeBtn.addEventListener("click", (event) => {
+    if (document.pointerLockElement === null) {
+		document.body.requestPointerLock();
+		overlayDisplay = 1;
+		overlay.style.display = "none";
+	  } else {
+		document.exitPointerLock();
+		overlayDisplay = 0;
+		overlay.style.display = "flex";
+	  }
+  });
+
+  quitBtn.addEventListener("click", (event) => {
+    //Code pour reset la partie
   });
 
 //Start Menu
@@ -149,15 +168,16 @@ startButton.addEventListener("click", (event) => {
   pauseBtn.style.visibility = "visible";
 });
 
-var options = {
-	"animate": true,
-	"patternWidth": 139.68,
-	"patternHeight": 85.64,
-	"grainOpacity": 0.06,
-	"grainDensity": 1.79,
-	"grainWidth": 1.1,
-	"grainHeight": 1
-  }
+//Noise
+// var options = {
+// 	"animate": true,
+// 	"patternWidth": 139.68,
+// 	"patternHeight": 85.64,
+// 	"grainOpacity": 0.06,
+// 	"grainDensity": 1.79,
+// 	"grainWidth": 1.1,
+// 	"grainHeight": 1
+//   }
   
   /*
   background-color :rgb(25, 19, 19)
@@ -172,8 +192,6 @@ let overlayDisplay = 1;
 
 // document.body.requestPointerLock();
 
-//document.body.innerHTML = document.body.innerHTML + '<div id="blocker"><div id="instructions"><span style="font-size:36px">Click to play</span><br /><br />Move: ZQSD<br/>Jump: SPACE<br/>Look: MOUSE</div></div>'
-//document.body.innerHTML = document.body.innerHTML + '<div class="gui"><div class="hud-layer"><div class="crosshair"><img src="/images/crosshair.svg" class="image"></div></div></div>'
 
 for (let i = 0; i < NUM_SPHERES; i++) {
   const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -442,9 +460,7 @@ loader.load("collions.glb", (gltf) => {
     if (test == 1 && action !== null) {
       action.stop();
       action.play();
-      console.log("c bon");
     } else if (test == 2) {
-      console.log("echec");
     }
   }
 

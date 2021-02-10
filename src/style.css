@@ -35,21 +35,6 @@ button {
   cursor: pointer;
 }
 
-#info {
-  position: absolute;
-  top: 0px;
-  width: 100%;
-  padding: 10px;
-  box-sizing: border-box;
-  text-align: center;
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  pointer-events: none;
-  z-index: 1; /* TODO Solve this in HTML */
-}
-
 a,
 button,
 input,
@@ -96,6 +81,7 @@ select {
 #logo-txt #title-logo, #logo-txt #superposed {
   font-size: 120px;
   font-family: 'Ethnocentric';
+  letter-spacing: 0.08em;
   font-style: italic;
   font-weight: 600;
   animation: neon 1.5s ease-in-out infinite alternate;
@@ -120,7 +106,6 @@ select {
 	color:transparent;
 	text-shadow: 0 0 9px rgba(168, 0, 190, 0.8);
 	/* -webkit-text-stroke-color: red; */
-	/* animation: subtitle-glitch-2 1s cubic-bezier(.25, .46, .45, .94) both infinite */
 }
 
 #logo-txt #title-logo:after{
@@ -128,7 +113,6 @@ select {
 	color:transparent;
 	text-shadow: 0 0 9px rgba(0, 131, 131, 0.8);
 	/* -webkit-text-stroke-color: rgb(0, 255, 242); */
-	/* animation: subtitle-glitch 1s cubic-bezier(.25, .46, .45, .94) both infinite */
 }
 
 /* #logo-txt #superposed{
@@ -237,24 +221,6 @@ select {
 	  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 16px rgba(255, 255, 255, 0.678), 0 0 24px #a00cad52, 0 0 36px #d322ff50, 0 0 52px #cb22ff36;
 	}
   }
-
-
-/*   
-@keyframes glitch-animation-1{
-	$steps: 20
-	@for $i from 0 through $steps 
-	  #{percentage($i*(1/$steps))} 
-		clip: rect(random(150)+px, 350px, random(150)+px, 30px)
-}
-
-    
-@keyframes glitch-animation-2{
-	$steps: 20
-	@for $i from 0 through $steps 
-	  #{percentage($i*(1/$steps))} 
-		clip: rect(random(150)+px, 350px, random(150)+px, 30px)
-}
- */
 
 #overlay {
   position: absolute;
@@ -446,47 +412,6 @@ button{
 	font-family: 'Nunito Sans', sans-serif;
 	text-transform: uppercase;
 }
-/* 
-button#startBtn {
-  background: linear-gradient(#333, #222);
-  box-sizing: border-box;
-  --color: #fa4ffa;
-  border: 2px solid var(--color);
-  border-radius: 0;
-  color: #fff;
-  display: block;
-  float: left;
-  font-size: 16px;
-  font-weight: 600;
-  height: 60px;
-  letter-spacing: 1.5px;
-  line-height: 60px;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  bottom: 30vh;
-  min-width: 250px;
-  animation: glow 3s ease-out infinite alternate;
-  background: transparent;
-  border-color: rgb(129, 43, 93);
-  color: #efe;
-  outline: none;
-  transition: all 4s ease;
-}
-
-button#startBtn:hover,
-button#startBtn:focus {
-  background-color: purple;
-  outline: none;
-  color: black;
-  transition: all 4s ease;
-}
-
-button#startBtn:active {
-  background: none;
-  background: linear-gradient(#393939, #292929);
-  box-shadow: 0 1px 0 #000, inset 1px 0 1px #222;
-} */
 
 @keyframes glow {
   0% {
@@ -533,17 +458,33 @@ button#startBtn:active {
 	padding-bottom: 10px;
 }
 
+.cyber-btn:before, .cyber-btn:after{
+	position: absolute;
+	padding: 8px 1px;
+	width: 100%;
+	height: 67%;
+	-webkit-clip: rect(0px, 0px, 0px, 0px);
+	clip: rect(0px, 0px, 0px, 0px);
+	background: rgba(255, 255, 255, 0.2);
+	color: #000;
+	z-index: 15;
+}
+
 .cyber-btn#start-btn:before,
 .cyber-btn#start-btn:after {
   content: "Démarrer";
-  position: absolute;
-  padding: 8px 0;
-  width: 100%;
-  -webkit-clip: rect(0px, 0px, 0px, 0px);
-  clip: rect(0px, 0px, 0px, 0px);
-  background: #fff;
-  color: #000;
 }
+
+.cyber-btn#close-btn:before,
+.cyber-btn#close-btn:after {
+  content: "Reprendre";
+}
+
+.cyber-btn#quit-btn:before,
+.cyber-btn#quit-btn:after {
+  content: "Quitter";
+}
+
 
 /* .cyber-btn:before,
 .cyber-btn:after {
@@ -555,18 +496,18 @@ button#startBtn:active {
   color: #000;
 } */
 
-.cyber-btn#start-btn:before {
+.cyber-btn:before {
   left: -3px;
-  top: -2px;
+  top: 0px;
   text-shadow: 2px 0 #fff;
-  box-shadow: 2px 0 #fff;
+  box-shadow: 2px 0 rgba(255, 255, 255, 0.459);
 }
 
-.cyber-btn#start-btn:after {
+.cyber-btn:after {
   left: 2px;
-  bottom: -2px;
+  top: 3px;
   text-shadow: -1px 0 #fff;
-  box-shadow: -1px 0 #fff;
+  box-shadow: -1px 0 rgba(255, 255, 255, 0.582);
 }
 
 .cyber-btn:hover, #overlay button:hover {
@@ -575,16 +516,16 @@ button#startBtn:active {
   transition: all 0.2s ease;
 }
 
-.cyber-btn#start-btn:hover:before {
-	background-color: rgb(163, 241, 255);
+.cyber-btn:hover:before {
+	background-color: rgb(106, 233, 255);
 	z-index: 10;
-  animation: glitch-test 1.5s infinite linear alternate-reverse;
+  animation: glitch-test 1.4s infinite linear alternate-reverse;
 }
 
-.cyber-btn#start-btn:hover:after {
-	background-color: rgb(0, 238, 255);
+.cyber-btn:hover:after {
+	background-color: rgb(46, 241, 255);
 	z-index: 10;
-  animation: glitch-test 2s infinite linear alternate;
+  animation: glitch-test 1.6s infinite linear alternate;
 }
 
 @keyframes glitch-test {
@@ -666,7 +607,7 @@ button#startBtn:active {
   z-index: 10;
 }
 
-#pauseBtn {
+#pause-btn {
   display: flex;
   margin-left: 10px;
   background-color: transparent;
@@ -688,8 +629,8 @@ button#startBtn:active {
 
 #equalizer:hover,
 #equalizer:focus,
-#pauseBtn:hover,
-#pauseBtn:focus {
+#pause-btn:hover,
+#pause-btn:focus {
   outline: 0;
   opacity: 1;
   cursor: pointer;
@@ -704,7 +645,7 @@ button#startBtn:active {
   bottom: 0;
 }
 
-#pauseBtn span {
+#pause-btn span {
   transition: 0.3s ease;
   display: inline-block;
   color: #fff;
