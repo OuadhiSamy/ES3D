@@ -39,7 +39,7 @@ let soundMuted = 0;
  */
 
 const sound = new Howl({
-	src: ["sounds/spacefunk.mp3"],
+	src: ["sounds/Cyber-Dream.mp3"],
 	loop: true,
 	volume: 0.08,
 	autoplay: true,
@@ -77,13 +77,14 @@ const quitBtn = document.getElementById("quit-btn");
 pauseBtn.style.visibility = "hidden";
 
 pauseBtn.addEventListener("click", (event) => {
+  console.log('inpause')
 	if (document.pointerLockElement === null) {
-		document.body.requestPointerLock();
-		overlayDisplay = 1;
+    overlayDisplay = 0;
 		overlay.style.display = "none";
+		document.body.requestPointerLock();
 	} else {
 		document.exitPointerLock();
-		overlayDisplay = 0;
+		overlayDisplay = 1;
 		overlay.style.display = "flex";
 	}
 });
@@ -91,17 +92,24 @@ pauseBtn.addEventListener("click", (event) => {
 closeBtn.addEventListener("click", (event) => {
 	if (document.pointerLockElement === null) {
 		document.body.requestPointerLock();
-		overlayDisplay = 1;
+		overlayDisplay = 0;
 		overlay.style.display = "none";
 	} else {
 		document.exitPointerLock();
-		overlayDisplay = 0;
+		overlayDisplay = 1;
 		overlay.style.display = "flex";
 	}
 });
 
 quitBtn.addEventListener("click", (event) => {
 	//Code pour reset la partie
+  startDisplay = 1;
+  sound.stop();
+  sound.play();
+  startMenu.style.display = "flex";
+	pauseBtn.style.visibility = "hidden";
+  overlayDisplay = 0;
+  overlay.style.display = "none";
 });
 
 //Start Menu
@@ -119,19 +127,19 @@ startButton.addEventListener("click", (event) => {
 
 //Menu Pause
 const overlay = document.getElementById("overlay");
-let overlayDisplay = 1;
+let overlayDisplay = 0;
 
-document.addEventListener("keyup", (event) => {
+document.addEventListener("keydown", (event) => {
 	keyStates[event.code] = true;
 
 	if (keyStates["KeyP"]) {
 		if (document.pointerLockElement === null) {
 			document.body.requestPointerLock();
-			overlayDisplay = 1;
+			overlayDisplay = 0;
 			overlay.style.display = "none";
 		} else {
 			document.exitPointerLock();
-			overlayDisplay = 0;
+			overlayDisplay = 1;
 			overlay.style.display = "flex";
 		}
 	}
@@ -219,7 +227,7 @@ const loadingManager = new THREE.LoadingManager(
 		// Animations after loading, can be done w/o gsap
 		let loadingTimeline = gsap.timeline();
 		loadingTimeline.to(".progress-container", { delay: 0.4, duration: 0.4, opacity: 0, y: 100, ease: "ease-in" })
-		loadingTimeline.to(".loading-overlay", { delay: 1.5, duration: 1, opacity: 0 })
+		loadingTimeline.to(".loading-overlay", { delay: 1.5, duration: 1, visibility:'hidden' })
 
 
 		for (const object of sceneItems) {
@@ -372,7 +380,13 @@ function setUpObject(object) {
  */
 const clock = new THREE.Clock();
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x88ccff);
+{
+  const color = 0x673ab7;  // white
+  const near = 4;
+  const far = 20;
+  scene.fog = new THREE.Fog(color, near, far);
+}
+scene.background = new THREE.Color(0x673ab7);
 
 mixer = new THREE.AnimationMixer(scene)
 
@@ -460,7 +474,7 @@ document.addEventListener('keyup', (event) => {
 
 document.addEventListener('mousedown', () => {
 
-	if (overlayDisplay === 0) document.body.requestPointerLock();
+	// if (overlayDisplay === 1) document.body.requestPointerLock();
 
 });
 
