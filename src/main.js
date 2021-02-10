@@ -13,7 +13,7 @@ import { Vector3 } from 'three'
 
 import { Howl, Howler } from "howler";
 
-// const gui = new dat.GUI();
+const gui = new dat.GUI();
 
 /**
  * Global Variables Declarations
@@ -78,9 +78,9 @@ const quitBtn = document.getElementById("quit-btn");
 pauseBtn.style.visibility = "hidden";
 
 pauseBtn.addEventListener("click", (event) => {
-  console.log('inpause')
+	console.log('inpause')
 	if (document.pointerLockElement === null) {
-    overlayDisplay = 0;
+		overlayDisplay = 0;
 		overlay.style.display = "none";
 		document.body.requestPointerLock();
 	} else {
@@ -104,13 +104,13 @@ closeBtn.addEventListener("click", (event) => {
 
 quitBtn.addEventListener("click", (event) => {
 	//Code pour reset la partie
-  startDisplay = 1;
-  sound.stop();
-  sound.play();
-  startMenu.style.display = "flex";
+	startDisplay = 1;
+	sound.stop();
+	sound.play();
+	startMenu.style.display = "flex";
 	pauseBtn.style.visibility = "hidden";
-  overlayDisplay = 0;
-  overlay.style.display = "none";
+	overlayDisplay = 0;
+	overlay.style.display = "none";
 });
 
 //Start Menu
@@ -131,34 +131,34 @@ const overlay = document.getElementById("overlay");
 let overlayDisplay = 0;
 
 document.addEventListener("keydown", (event) => {
-    keyStates[event.code] = true;
+	keyStates[event.code] = true;
 
-    if (keyStates["KeyP"]) {
-        if (document.pointerLockElement === null) {
-            document.body.requestPointerLock();
-            overlayDisplay = 0;
-            overlay.style.display = "none";
-        } else {
-            document.exitPointerLock();
-            overlayDisplay = 1;
-            overlay.style.display = "flex";
-        }
-    }
+	if (keyStates["KeyP"]) {
+		if (document.pointerLockElement === null) {
+			document.body.requestPointerLock();
+			overlayDisplay = 0;
+			overlay.style.display = "none";
+		} else {
+			document.exitPointerLock();
+			overlayDisplay = 1;
+			overlay.style.display = "flex";
+		}
+	}
 
-    keyStates[event.code] = true;
+	keyStates[event.code] = true;
 
-    if (keyStates["Semicolon"]) {
-        eq.classList.toggle("mute");
-        if (soundMuted == 0) {
-            sound.pause();
-            soundMuted = 1;
-            console.log("mute");
-        } else {
-            sound.play();
-            soundMuted = 0;
-            console.log("unmute");
-        }
-    }
+	if (keyStates["Semicolon"]) {
+		eq.classList.toggle("mute");
+		if (soundMuted == 0) {
+			sound.pause();
+			soundMuted = 1;
+			console.log("mute");
+		} else {
+			sound.play();
+			soundMuted = 0;
+			console.log("unmute");
+		}
+	}
 });
 
 /**
@@ -228,7 +228,7 @@ const loadingManager = new THREE.LoadingManager(
 		// Animations after loading, can be done w/o gsap
 		let loadingTimeline = gsap.timeline();
 		loadingTimeline.to(".progress-container", { delay: 0.4, duration: 0.4, opacity: 0, y: 100, ease: "ease-in" })
-		loadingTimeline.to(".loading-overlay", { delay: 1.5, duration: 1, visibility:'hidden' })
+		loadingTimeline.to(".loading-overlay", { delay: 1.5, duration: 1, visibility: 'hidden' })
 
 
 		for (const object of sceneItems) {
@@ -305,9 +305,25 @@ function initLoading() {
 
 	});
 
+
 	gltfLoader.load('threejs_structure_v3.glb', (gltf) => {
 
+		// gltf.scene.position.set(new Vector3(-1, 0, -1))
+		// gltf.scene.position.x = -10;
+		// gltf.scene.position.y = 0;
+		// gltf.scene.position.z = -20;
+
+
+
 		scene.add(gltf.scene);
+		// console.log(gltf)
+		// let color = new THREE.Color(0xff0000);
+		// let material = new THREE.MeshBasicMaterial({ color: "red" })
+		// gltf.scene.children[6].children[1].material = material;
+		// gltf.scene.children[6].children[1].material.color = color;
+		// console.log(gltf.scene.children[6])
+		// gltf.scene.children[6].children[0].add(sprite); // this centers the glow at the mesh
+
 
 		gltf.scene.traverse(child => {
 			if (child.isMesh) {
@@ -383,10 +399,10 @@ function setUpObject(object) {
 const clock = new THREE.Clock();
 const scene = new THREE.Scene();
 {
-  const color = 0x673ab7;  // white
-  const near = 4;
-  const far = 20;
-  scene.fog = new THREE.Fog(color, near, far);
+	const color = 0x673ab7;  // white
+	const near = 4;
+	const far = 20;
+	scene.fog = new THREE.Fog(color, near, far);
 }
 scene.background = new THREE.Color(0x673ab7);
 
@@ -395,6 +411,41 @@ mixer = new THREE.AnimationMixer(scene)
 // const planeGeometry = new THREE.PlaneBufferGeometry(3.5, 3.5);
 // const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture })
 // planeMaterial.side = THREE.DoubleSide;
+
+
+const glowMap = new textureLoader.load('textures/glow.png');
+glowMap.wrapS = THREE.RepeatWrapping;
+// glowMap.wrapT = THREE.RepeatWrapping;
+glowMap.repeat.set( 24, 1 );
+glowMap.rotation = 90;
+gui.add(glowMap.repeat, "x", 0, 100, 1 )
+
+// SUPER SIMPLE GLOW EFFECT
+// use sprite because it appears the same from all angles
+// let spriteMaterial = new THREE.MeshBasicMaterial(
+// 	{
+// 		map: glowMap,
+// 		// useScreenCoordinates: false, alignment: THREE.SpriteAlignment.center,
+// 		color: 0x0000ff, transparent: true, blending: THREE.AdditiveBlending
+// 	});
+let planeGeometry = new THREE.CylinderGeometry(0.1, 0.1, 5, 32);
+let planeMaterial = new THREE.MeshBasicMaterial({ 
+	map: glowMap, 
+	color: 0x42A0FF, 
+	transparent: true, 
+	blending: THREE.AdditiveBlending, 
+	side: THREE.DoubleSide })
+let plane = new THREE.Mesh(planeGeometry, planeMaterial)
+
+// sprite.scale.set(5, 1, 1.0);
+const geometry = new THREE.CylinderGeometry(0.1, 0.1, 5, 32);
+const material = new THREE.MeshBasicMaterial({ color: 0x1c1c1c });
+const cylinder = new THREE.Mesh(geometry, material);
+
+// cylinder.add(plane)
+cylinder.position.set(2, 0.5, 0);
+cylinder.rotateX(Math.PI / 2);
+scene.add(cylinder, plane);
 
 
 /**
@@ -436,7 +487,7 @@ const stats = new Stats();
 stats.domElement.style.position = 'absolute';
 stats.domElement.style.top = '0px';
 
-// container.appendChild(stats.domElement);
+container.appendChild(stats.domElement);
 
 const GRAVITY = 30;
 
@@ -774,7 +825,7 @@ function animate() {
 
 	renderer.render(scene, camera);
 
-	// stats.update();
+	stats.update();
 
 	requestAnimationFrame(animate);
 
