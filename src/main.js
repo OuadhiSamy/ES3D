@@ -29,6 +29,7 @@ let wallMaterial = new THREE.MeshPhysicalMaterial({
 	roughness: 10,
 	metalness: 0.6,
 });
+let isPauseMenuActive = false;
 
 
 let mixer = null;
@@ -122,34 +123,50 @@ const overlay = document.getElementById("overlay");
 let overlayDisplay = 1;
 
 document.addEventListener("keyup", (event) => {
-	keyStates[event.code] = true;
+	console.log("keyup")
+	if (keyStates["KeyP"] || keyStates["Escape"]) {
+		
+		console.log(isPauseMenuActive)
 
-	if (keyStates["KeyP"]) {
-		if (document.pointerLockElement === null) {
+		if (isPauseMenuActive === true) {
 			document.body.requestPointerLock();
-			overlayDisplay = 1;
 			overlay.style.display = "none";
+			isPauseMenuActive = false
 		} else {
 			document.exitPointerLock();
-			overlayDisplay = 0;
 			overlay.style.display = "flex";
+			isPauseMenuActive = true;
 		}
-	}
 
-	keyStates[event.code] = true;
-
-	if (keyStates["Semicolon"]) {
-		eq.classList.toggle("mute");
-		if (soundMuted == 0) {
-			sound.pause();
-			soundMuted = 1;
-			console.log("mute");
-		} else {
-			sound.play();
-			soundMuted = 0;
-			console.log("unmute");
-		}
 	}
+	// keyStates[event.code] = true;
+	// console.log(keyStates["Escape"], keyStates)
+	// if (keyStates["KeyP"] || !keyStates["Escape"])	 {
+	// 	if (document.pointerLockElement === null) {
+	// 		document.body.requestPointerLock();
+	// 		overlayDisplay = 1;
+	// 		overlay.style.display = "none";
+	// 	} else {
+	// 		document.exitPointerLock();
+	// 		overlayDisplay = 0;
+	// 		overlay.style.display = "flex";
+	// 	}
+	// }
+
+	// keyStates[event.code] = true;
+
+	// if (keyStates["Semicolon"]) {
+	// 	eq.classList.toggle("mute");
+	// 	if (soundMuted == 0) {
+	// 		sound.pause();
+	// 		soundMuted = 1;
+	// 		console.log("mute");
+	// 	} else {
+	// 		sound.play();
+	// 		soundMuted = 0;
+	// 		console.log("unmute");
+	// 	}
+	// }
 });
 
 /**
@@ -279,7 +296,7 @@ const gltfLoader = new GLTFLoader(loadingManager).setPath('./models/');
 
 let arrowMesh;
 function initLoading() {
-	
+
 	// Load structures
 	gltfLoader.load('threejs_colliders_v3.glb', (gltf) => {
 
@@ -400,28 +417,17 @@ camera.rotation.order = 'YXZ';
 camera.rotateY(- Math.PI * 0.5);
 
 var ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
-var lightFront = new THREE.SpotLight(0xFFFFFF, 2.04, 100);
+var directionalLight = new THREE.DirectionalLight(0xFFFFFF, 2.04, 100);
 
-lightFront.position.set(5.2, 8.4, -3.425);
-lightFront.castShadow = true;
-lightFront.shadow.mapSize.width = 6000;
-lightFront.shadow.mapSize.height = lightFront.shadow.mapSize.width;
-lightFront.penumbra = 0.1;
-
+directionalLight.position.set(5.2, 8.4, -3.425);
 scene.add(ambientLight);
-scene.add(lightFront);
-
-gui.add(ambientLight, 'intensity', 0, 20, 0.01)
-gui.add(lightFront, 'intensity', 0, 10, 0.01)
-gui.add(lightFront.position, 'x', -25, 25, 0.001)
-gui.add(lightFront.position, 'y', -25, 25, 0.001)
-gui.add(lightFront.position, 'z', -25, 25, 0.001)
+scene.add(directionalLight);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.VSMShadowMap;
+// renderer.shadowMap.enabled = true;
+// renderer.shadowMap.type = THREE.VSMShadowMap;
 
 const container = document.getElementById('container');
 
