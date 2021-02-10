@@ -20,7 +20,7 @@ body {
     z-index: 1;
 }
 
-.overlay {
+.loading-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -85,12 +85,18 @@ body {
     color: #fff;
     border: 1px solid #fff;
     opacity: 0;
-    transition: opacity 0.2s;
+    transition: 0.3s ease;
 }
 
 .interaction-text.visible {
     opacity: 1;
 }
+
+
+.interaction-text.above {
+    bottom: 20%;
+}
+
 
 .insight {
     position: fixed;
@@ -123,11 +129,6 @@ body {
     transform: translate(-50%, 24px);
     font-size: 12px;
     transition: 0.3s;
-}
-
-.insight.visible .interaction-text.visible {
-    bottom: 20%;
-    background-color: red;
 }
 
 #blocker {

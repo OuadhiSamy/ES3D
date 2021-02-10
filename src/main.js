@@ -40,7 +40,7 @@ let paramMap = [
 		mesh: null,
 		position: new Vector3(5, 0, 1.25),
 		action: null,
-		duration: 10,
+		duration: 2,
 		insight: "Encore une chaise jaune. Cet objet est présent dans tout le campus, à tel point que vous avez l'impression que celle-ci vous suit partout. Elle vient de vous regarder mal là, non ?"
 	},
 	{
@@ -48,8 +48,34 @@ let paramMap = [
 		mesh: null,
 		position: new Vector3(5, 0, -2.8),
 		action: null,
-		duration: 10,
+		duration: 2,
 		insight: "Vous insérez une pièce dans la machine et vous sélectionnez un grand café fort pour vous remettre de votre code sprint. La machine se lance, mais vous présente finalement un gobelet vide. Vous auriez mieux fait de choisir un café en intraveineuse."
+	},
+	{
+		name: "fat_boy",
+		mesh: null,
+		position: new Vector3(1.76, 0, 1.92),
+		rotation: Math.PI,
+		action: null,
+		duration: 2,
+		insight: "Vous avez une pause entre deux sessions de recherches UX, le fatboy vous fait de l’œil. Il a l'air moelleux et réconfortant. Vous vous sentez attiré(e) par son aura. Alors que vous êtes sur le point de vous laisser engloutir par la tentation, votre meilleur ami vous tapote l'épaule et vous ramène à la réalité."
+	},
+	{
+		name: "multiprise",
+		mesh: null,
+		position: new Vector3(2, 0, 0.5),
+		rotation: Math.PI,
+		action: null,
+		duration: 4,
+		insight: "Cette multiprise gît sur le sol après une bataille acharnée dans le cours des B1. Le conflit millénaire pour brancher son ordinateur a laissé la multiprise inerte sur le sol. Enfin, jusqu'au cours suivant"
+	},
+	{
+		name: "ascenseur",
+		mesh: null,
+		position: new Vector3(-0.16, 0, -2.8),
+		action: null,
+		duration: 4,
+		insight: "Vous passez devant l'ascenseur et l'envie vous prend de l'emprunter. Après tout, vous méritez bien cette économie d'énergie après une journée si chargée. Les portes s'ouvrent mais, au moment où vous mettez un pied dedans, vous entendez la voix de Malika qui vous rappelle que les élèves doivent utiliser les escaliers."
 	},
 ]
 
@@ -72,7 +98,7 @@ const loadingManager = new THREE.LoadingManager(
 		// Animations after loading, can be done w/o gsap
 		let loadingTimeline = gsap.timeline();
 		loadingTimeline.to(".progress-container", { delay: 0.4, duration: 0.4, opacity: 0, y: 100, ease: "ease-in" })
-		loadingTimeline.to(".overlay", { delay: 1.5, duration: 1, opacity: 0 })
+		loadingTimeline.to(".loading-overlay", { delay: 1.5, duration: 1, opacity: 0 })
 
 
 		for (const object of sceneItems) {
@@ -87,7 +113,6 @@ const loadingManager = new THREE.LoadingManager(
 			// Add arrow on top of each object
 			// get object size
 			let boundBox = new THREE.Box3().setFromObject(object.mesh);
-			console.log(object.mesh)
 			const helper = new THREE.Box3Helper(boundBox, 0xffff00);
 			scene.add(helper);
 			let objectSize = boundBox.getSize(); // objectSize is a vector3
@@ -141,8 +166,6 @@ gltfLoader.load('threejs_colliders_v3.glb', (gltf) => {
 
 	});
 
-	console.log(scene)
-
 	animate();
 
 });
@@ -182,9 +205,10 @@ function setUpObject(object) {
 	let objectParams = getInformationFromContentMap(object.scene.children[0].name);
 
 	if (objectParams) {
+		if (objectParams.rotation) object.scene.rotation.y = objectParams.rotation;
 		object.scene.position.copy(objectParams.position)
 		objectParams.mesh = object.scene.children[0];
-		objectParams.action = mixer.clipAction(object.animations[0], objectParams.mesh);
+		objectParams.action = mixer.clipAction(object.animations[0], objectParams.mesh.parent);
 		objectParams.action.setDuration(objectParams.duration);
 		objectParams.action.setLoop(THREE.LoopOnce);
 		sceneItems.push(objectParams);
@@ -201,6 +225,19 @@ gltfLoader.load('chaise.glb', (gltf) => {
 })
 
 gltfLoader.load('machine.glb', (gltf) => {
+	setUpObject(gltf);
+})
+
+gltfLoader.load('fatboy.glb', (gltf) => {
+	setUpObject(gltf);
+})
+
+gltfLoader.load('ascenseur.glb', (gltf) => {
+	setUpObject(gltf);
+})
+
+gltfLoader.load('multiprise.gltf', (gltf) => {
+	console.log(gltf)
 	setUpObject(gltf);
 })
 
@@ -234,20 +271,6 @@ const planeGeometry = new THREE.PlaneBufferGeometry(3.5, 3.5);
 const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture })
 planeMaterial.side = THREE.DoubleSide;
 
-const boxes = [
-	{
-		name: "red cube",
-		mesh: box1, position: new Vector3(5, 0.75 / 2, -2),
-		insight: "Vous insérez une pièce dans la machine et vous sélectionnez un grand café fort pour vous remettre de votre code sprint. La machine se lance, mais vous présente finalement un gobelet vide.Vous auriez mieux fait de choisir un café en intraveineuse."
-	},
-	{
-		name: "blue cube",
-		mesh: box2,
-		position: new Vector3(7, 1.25 / 2, 1.25),
-		insight: "Vous avez une pause entre deux sessions de recherches UX, le fatboy vous fait de l’œil. Il a l'air moelleux et réconfortant. Vous vous sentez attiré(e) par son aura. Alors que vous êtes sur le point de vous laisser engloutir par la tentation, votre meilleur ami vous tapote l'épaule et vous ramène à la réalité."
-	},
-];
-
 
 /**
  * Positions Helper
@@ -255,19 +278,11 @@ const boxes = [
 const posXElement = document.querySelector('.positionX');
 const posYElement = document.querySelector('.positionY');
 const posZElement = document.querySelector('.positionZ');
-const distB1 = document.querySelector('.distB1');
-const distB2 = document.querySelector('.distB2');
 function updatePositionHelper() {
 
 	posXElement.innerHTML = `posX : ${Math.round(camera.position.x * 100) / 100}`
 	posYElement.innerHTML = `posY : ${Math.round(camera.position.y * 100) / 100}`
 	posZElement.innerHTML = `posZ : ${Math.round(camera.position.z * 100) / 100}`
-
-	let distFromRed = getDistanceFromVector3(boxes[0].position);
-	let distFromBlue = getDistanceFromVector3(boxes[1].position);
-	distB1.innerHTML = `Distance from red : ${Math.round(distFromRed * 100) / 100}`
-	distB2.innerHTML = `Distance from blue : ${Math.round(distFromBlue * 100) / 100}`
-
 
 }
 
@@ -313,7 +328,7 @@ const GRAVITY = 30;
 
 const worldOctree = new Octree();
 
-const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1.25, 0), 0.35);
+const playerCollider = new Capsule(new THREE.Vector3(0, 0.35, 0), new THREE.Vector3(0, 1.5, 0), 0.35);
 
 const playerVelocity = new THREE.Vector3();
 const playerDirection = new THREE.Vector3();
@@ -564,28 +579,33 @@ function updateInsightState(visible) {
 
 		if (insightElement.innerHTML.length > 0) {
 			insightElement.classList.remove('visible');
+			interactionElement.classList.remove('above');
 			setTimeout(() => {
 				// Avoid clearing text before element not visible
 				insightElement.innerHTML = '';
 			}, 300)
 
 			setTimeout(() => {
-				insightElement.classList.add('visible')
+				insightElement.classList.add('visible');
+				interactionElement.classList.add('above');
 				insightElement.innerHTML = insight;
 			}, 900)
 
 		} else {
-			insightElement.classList.add('visible')
+			insightElement.classList.add('visible');
+			interactionElement.classList.add('above');
 			insightElement.innerHTML = insight;
 		}
 
 	} else {
-		insightElement.classList.remove('visible')
+		insightElement.classList.remove('visible');
+		interactionElement.classList.remove('above');
 		insightElement.innerHTML = '';
 	}
 }
 function closeInsight() {
-	insightElement.classList.remove('visible')
+	interactionElement.classList.remove('above');
+	insightElement.classList.remove('visible');
 	setTimeout(() => {
 		//Avoid clear text before element not visible
 		insightElement.innerHTML = '';
