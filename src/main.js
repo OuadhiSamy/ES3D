@@ -2,6 +2,7 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+// import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import * as dat from 'dat.gui'
 import { gsap } from 'gsap'
 
@@ -22,7 +23,7 @@ let closestObject = null;
 let isAnimationInProgress = false;
 let canAnimate = false;
 let positionScreenSpace = new THREE.Vector3();
-let threshold = 2.5;
+let threshold = 2.25;
 let arrows = [];
 let wallMaterial = new THREE.MeshPhysicalMaterial({
 	color: 0x1c1c1c,
@@ -30,6 +31,9 @@ let wallMaterial = new THREE.MeshPhysicalMaterial({
 	metalness: 0.6,
 });
 
+//Compression 3D
+// const dracoLoader = new DRACOLoader()
+// dracoLoader.setDecoderPath('/draco/')
 
 let mixer = null;
 
@@ -37,6 +41,18 @@ let soundMuted = 0;
 /**
  * Loaders
  */
+
+const jsloader = document.getElementById('js-loader');
+const jsloaderinner = document.getElementById('loader');
+window.setTimeout(function(){
+  jsloader.classList.toggle('hide');
+  jsloaderinner.classList.toggle('hide');
+  // jsloader.addEventListener('transitionend', () => jsloader.remove());
+}, 2000)
+
+window.setTimeout(function(){
+  jsloader.remove()
+}, 3000)
 
 const sound = new Howl({
 	src: ["sounds/Cyber-Dream.mp3"],
@@ -49,6 +65,11 @@ sound.play();
 
 const cafe = new Howl({
 	src: ["sounds/coffee.mp3"],
+	volume: 0.3,
+});
+
+const scream = new Howl({
+	src: ["sounds/wilhelm-scream.mp3"],
 	volume: 0.3,
 });
 
@@ -123,7 +144,26 @@ startButton.addEventListener("click", (event) => {
 	initLoading();
 	startMenu.style.display = "none";
 	pauseBtn.style.visibility = "visible";
+	// video.play();
+	// sound.stop();
 });
+
+//Video
+var video = document.getElementById("video-trailer");
+
+// video.onended = function(){
+// 	let videocontainer = document.getElementsByClassName('intro-video');
+// 	videocontainer.remove();
+// 	sound.play();
+// }
+
+function playVid() {
+    video.play();
+}
+
+function pauseVid() {
+    video.pause();
+}
 
 //Menu Pause
 const overlay = document.getElementById("overlay");
@@ -178,7 +218,7 @@ let paramMap = [
 		position: new Vector3(5, 0, -2.8),
 		action: null,
 		duration: 2,
-		insight: "Vous insérez une pièce dans la machine et vous sélectionnez un grand café fort pour vous remettre de votre code sprint. La machine se lance, mais vous présente finalement un gobelet vide. Vous auriez mieux fait de choisir un café en intraveineuse."
+		insight: "Vous insérez une pièce dans la machine et vous sélectionnez un grand café fort pour vous remettre de votre Code Sprint. La machine se lance, mais vous présente finalement un gobelet vide. Vous auriez mieux fait de choisir un café en intraveineuse."
 	},
 	{
 		name: "fat_boy",
@@ -187,7 +227,7 @@ let paramMap = [
 		rotation: Math.PI,
 		action: null,
 		duration: 2,
-		insight: "Vous avez une pause entre deux sessions de recherches UX, le fatboy vous fait de l’œil. Il a l'air moelleux et réconfortant. Vous vous sentez attiré(e) par son aura. Alors que vous êtes sur le point de vous laisser engloutir par la tentation, votre meilleur ami vous tapote l'épaule et vous ramène à la réalité."
+		insight: "Vous avez une pause entre deux sessions de recherche UX, le fatboy vous fait de l’œil. Il a l'air moelleux et réconfortant. Vous vous sentez attiré(e) par son aura. Alors que vous êtes sur le point de vous laisser engloutir par la tentation, votre meilleur ami vous tapote l'épaule et vous ramène à la réalité."
 	},
 	{
 		name: "multiprise",
@@ -196,7 +236,7 @@ let paramMap = [
 		rotation: Math.PI,
 		action: null,
 		duration: 4,
-		insight: "Cette multiprise gît sur le sol après une bataille acharnée dans le cours des B1. Le conflit millénaire pour brancher son ordinateur a laissé la multiprise inerte sur le sol. Enfin, jusqu'au cours suivant"
+		insight: "Cette multiprise gît sur le sol après une bataille acharnée dans le cours des B1. Le conflit millénaire pour brancher son ordinateur a laissé la multiprise inerte sur le sol. Enfin, jusqu'au cours suivant."
 	},
 	{
 		name: "ascenseur",
@@ -209,7 +249,7 @@ let paramMap = [
 ]
 
 /**
- * Content that will be display
+ * Content that will be displayed
  */
 let sceneItems = []
 
@@ -284,6 +324,7 @@ const textureLoader = new THREE.TextureLoader(loadingManager);
 // const planeTexture = textureLoader.load('textures/circle.png');
 
 const gltfLoader = new GLTFLoader(loadingManager).setPath('./models/');
+// gltfLoader.setDRACOLoader(dracoLoader)
 
 let arrowMesh;
 function initLoading() {
@@ -384,7 +425,7 @@ const scene = new THREE.Scene();
   const color = 0x673ab7;  // white
   const near = 4;
   const far = 20;
-  scene.fog = new THREE.Fog(color, near, far);
+  // scene.fog = new THREE.Fog(color, near, far);
 }
 scene.background = new THREE.Color(0x673ab7);
 
@@ -414,6 +455,7 @@ camera.rotation.order = 'YXZ';
 camera.rotateY(- Math.PI * 0.5);
 
 var ambientLight = new THREE.AmbientLight(0xFFFFFF, 1);
+var hemisphereLight = new THREE.HemisphereLight(0xff0000, 0x0000ff,0.5);
 var lightFront = new THREE.SpotLight(0xFFFFFF, 2.04, 100);
 
 lightFront.position.set(5.2, 8.4, -3.425);
@@ -423,10 +465,12 @@ lightFront.shadow.mapSize.height = lightFront.shadow.mapSize.width;
 lightFront.penumbra = 0.1;
 
 scene.add(ambientLight);
+scene.add(hemisphereLight);
 scene.add(lightFront);
 
 gui.add(ambientLight, 'intensity', 0, 20, 0.01)
 gui.add(lightFront, 'intensity', 0, 10, 0.01)
+gui.add(hemisphereLight, 'intensity', 0, 100, 0.01)
 gui.add(lightFront.position, 'x', -25, 25, 0.001)
 gui.add(lightFront.position, 'y', -25, 25, 0.001)
 gui.add(lightFront.position, 'z', -25, 25, 0.001)
@@ -434,7 +478,7 @@ gui.add(lightFront.position, 'z', -25, 25, 0.001)
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
+renderer.shadowMap.enabled = false;
 renderer.shadowMap.type = THREE.VSMShadowMap;
 
 const container = document.getElementById('container');
@@ -474,7 +518,7 @@ document.addEventListener('keyup', (event) => {
 
 document.addEventListener('mousedown', () => {
 
-	// if (overlayDisplay === 1) document.body.requestPointerLock();
+	if (overlayDisplay == 0 && startDisplay == 0) document.body.requestPointerLock();
 
 });
 
@@ -521,6 +565,9 @@ function playerCollitions() {
 		playerCollider.translate(result.normal.multiplyScalar(result.depth));
 
 	}
+  // else{
+  //   scream.play()
+  // }
 
 }
 
@@ -581,7 +628,15 @@ function getClosestObject() {
 		// Get distance camera --> box
 		const distFromCamera = getDistanceFromVector3(object.position);
 		// Compare distance to threshold
-		if (distFromCamera < 2) {
+		if (distFromCamera < threshold) {
+			if (closestObject === null) {
+				closestObject = object;
+				// If an obj is already stored, replace if closer
+			} else if (distFromCamera < getDistanceFromVector3(closestObject.position)) {
+				closestObject = object;
+			}
+		}
+		else if(distFromCamera < (threshold+0.75) && object.name == 'ascenseur'){
 			if (closestObject === null) {
 				closestObject = object;
 				// If an obj is already stored, replace if closer
@@ -597,7 +652,7 @@ function getClosestObject() {
 
 function controls(deltaTime) {
 
-	const speed = 25;
+	const speed = 20;
 
 	if (playerOnFloor) {
 
@@ -699,7 +754,6 @@ function updateInsightState(visible) {
 		//Store insight to avoid losing insight if player go away during transition states
 		let insight = closestObject.insight;
 
-
 		if (insightElement.innerHTML.length > 0) {
 			insightElement.classList.remove('visible');
 			interactionElement.classList.remove('above');
@@ -718,6 +772,12 @@ function updateInsightState(visible) {
 			insightElement.classList.add('visible');
 			interactionElement.classList.add('above');
 			insightElement.innerHTML = insight;
+			if(closestObject.name == 'ascenseur'){
+				interactionElement.classList.add('ascenseur');
+			}
+			else{
+				interactionElement.classList.remove('ascenseur');
+			}
 		}
 
 	} else {
@@ -732,9 +792,8 @@ function closeInsight() {
 	setTimeout(() => {
 		//Avoid clear text before element not visible
 		insightElement.innerHTML = '';
-	}, 300)
+	}, 400)
 }
-
 
 function animateArrows(elapsedTime) {
 	for (const arrow of arrows) {
@@ -748,7 +807,11 @@ function isPlayerLookingAtObject() {
 		positionScreenSpace.copy(closestObject.position).project(camera);
 		positionScreenSpace.setZ(0);
 		return positionScreenSpace.length() < threshold;
-	} else return false
+	}
+	else 
+	{
+		return false
+	}
 }
 
 
@@ -760,6 +823,11 @@ function animate() {
 	updatePositionHelper();
 
 	closestObject = getClosestObject();
+	if(closestObject == null){
+		console.log('closeinsight')
+		closeInsight()
+	}
+
 
 	if (closestObject && !isAnimationInProgress && isPlayerLookingAtObject()) {
 		updateInteractionButtonState(true)
