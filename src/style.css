@@ -196,7 +196,7 @@ select {
     flex-direction: column;
     backdrop-filter: blur(2px);
     background-repeat: no-repeat;
-    background: radial-gradient(ellipse at bottom, #122124 0%, #0d0514 100%);
+    /* background: radial-gradient(ellipse at bottom, #122124 0%, #0d0514 100%); */
 }
 
 #start-screen:before {

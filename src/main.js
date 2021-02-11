@@ -14,7 +14,7 @@ import { Vector3 } from 'three'
 
 import { Howl, Howler } from "howler";
 
-const gui = new dat.GUI();
+// const gui = new dat.GUI();
 
 /**
  * Global Variables Declarations
@@ -282,8 +282,8 @@ const loadingManager = new THREE.LoadingManager(
 			// Add arrow on top of each object
 			// get object size
 			let boundBox = new THREE.Box3().setFromObject(object.mesh);
-			const helper = new THREE.Box3Helper(boundBox, 0xffff00);
-			scene.add(helper);
+			// const helper = new THREE.Box3Helper(boundBox, 0xffff00);
+			// scene.add(helper);
 			let objectSize = boundBox.getSize(); // objectSize is a vector3
 			let newArrow = arrowMesh.clone();
 			newArrow.position.set(object.mesh.parent.position.x, objectSize.y + 0.4, object.mesh.parent.position.z)
@@ -442,13 +442,13 @@ mixer = new THREE.AnimationMixer(scene)
 const posXElement = document.querySelector('.positionX');
 const posYElement = document.querySelector('.positionY');
 const posZElement = document.querySelector('.positionZ');
-function updatePositionHelper() {
+// function updatePositionHelper() {
 
-	posXElement.innerHTML = `posX : ${Math.round(camera.position.x * 100) / 100}`
-	posYElement.innerHTML = `posY : ${Math.round(camera.position.y * 100) / 100}`
-	posZElement.innerHTML = `posZ : ${Math.round(camera.position.z * 100) / 100}`
+// 	posXElement.innerHTML = `posX : ${Math.round(camera.position.x * 100) / 100}`
+// 	posYElement.innerHTML = `posY : ${Math.round(camera.position.y * 100) / 100}`
+// 	posZElement.innerHTML = `posZ : ${Math.round(camera.position.z * 100) / 100}`
 
-}
+// }
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.rotation.order = 'YXZ';
@@ -468,12 +468,12 @@ scene.add(ambientLight);
 scene.add(hemisphereLight);
 scene.add(lightFront);
 
-gui.add(ambientLight, 'intensity', 0, 20, 0.01)
-gui.add(lightFront, 'intensity', 0, 10, 0.01)
-gui.add(hemisphereLight, 'intensity', 0, 100, 0.01)
-gui.add(lightFront.position, 'x', -25, 25, 0.001)
-gui.add(lightFront.position, 'y', -25, 25, 0.001)
-gui.add(lightFront.position, 'z', -25, 25, 0.001)
+// gui.add(ambientLight, 'intensity', 0, 20, 0.01)
+// gui.add(lightFront, 'intensity', 0, 10, 0.01)
+// gui.add(hemisphereLight, 'intensity', 0, 100, 0.01)
+// gui.add(lightFront.position, 'x', -25, 25, 0.001)
+// gui.add(lightFront.position, 'y', -25, 25, 0.001)
+// gui.add(lightFront.position, 'z', -25, 25, 0.001)
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -489,7 +489,7 @@ const stats = new Stats();
 stats.domElement.style.position = 'absolute';
 stats.domElement.style.top = '0px';
 
-container.appendChild(stats.domElement);
+// container.appendChild(stats.domElement);
 
 const GRAVITY = 30;
 
@@ -820,7 +820,7 @@ function animate() {
 	const deltaTime = Math.min(0.1, clock.getDelta());
 	const elapsedTime = clock.getElapsedTime()
 
-	updatePositionHelper();
+	// updatePositionHelper();
 
 	closestObject = getClosestObject();
 	if(closestObject == null){
@@ -851,7 +851,7 @@ function animate() {
 
 	renderer.render(scene, camera);
 
-	stats.update();
+	// stats.update();
 
 	requestAnimationFrame(animate);
 
