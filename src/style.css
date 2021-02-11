@@ -378,18 +378,40 @@ select {
 #overlay {
     position: absolute;
     font-size: 16px;
-    z-index: 150;
+    z-index: -5;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
     background: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(35px) saturate(30%) brightness(70%);
     transition: 0.3s ease;
+    opacity: 0;
+}
+
+#overlay.active-pause{
+    opacity: 1;
+    z-index: 15;
+}
+
+#overlay #pause-menu{
+    opacity: 1;
+    z-index: 15;
+    -webkit-transform: scale3d(0.8,0.8,0.8);
+    transform: scale3d(0.8, 0.8, 0.8);
+    
+    transition: 0.3s ease;
+}
+
+#overlay.active-pause #pause-menu{
+    opacity: 1;
+    z-index: 15;
+    -webkit-transform: scale3d(1,1,1);
+    transform: scale3d(1, 1, 1);
 }
 
 #overlay button {
@@ -1138,4 +1160,162 @@ button {
     opacity: 1;
     -webkit-transform: translate3d(0,0,0);
     transform: translate3d(0,0,0);
+}
+
+/* Tutoriel */
+
+.tutoriel {
+    position: fixed;
+    bottom: 12rem;
+    width: 100%;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    -webkit-transition: opacity 1s,visibility 1s,-webkit-transform 1s cubic-bezier(.19,1,.22,1);
+    transition: opacity 1s,visibility 1s,-webkit-transform 1s cubic-bezier(.19,1,.22,1);
+    transition: opacity 1s,transform 1s cubic-bezier(.19,1,.22,1),visibility 1s;
+    transition: opacity 1s,transform 1s cubic-bezier(.19,1,.22,1),visibility 1s,-webkit-transform 1s cubic-bezier(.19,1,.22,1);
+    pointer-events: none;
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
+    z-index: 2;
+}
+
+.tutoriel-is-visible{
+    opacity: 1;
+    bottom: 12rem;
+    width: 100%;
+    text-align: center;
+    visibility: visible;
+    position: fixed;
+    z-index: 2;
+    -webkit-transition: opacity 1s, -webkit-transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: opacity 1s, -webkit-transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: opacity 1s, transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: opacity 1s, transform 1s cubic-bezier(0.19, 1, 0.22, 1), -webkit-transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.tutoriel-is-visible .tutoriel_text {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-transition: -webkit-transform 1s 0s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: -webkit-transform 1s 0s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: transform 1s 0s cubic-bezier(0.19, 1, 0.22, 1);
+    transition: transform 1s 0s cubic-bezier(0.19, 1, 0.22, 1), -webkit-transform 1s 0s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.tutoriel-text {
+    position: fixed;
+    width: 100%;
+    bottom: 12rem;
+    font-size: 18px;
+    opacity: 0;
+    text-shadow: 1px 1px 2px rgb(0 0 0 / 70%);
+    -webkit-transform: translate3d(0,100px,1000px);
+    transform: translate3d(0,100px,1000px);
+    -webkit-transition: -webkit-transform 0s .5s cubic-bezier(.19,1,.22,1);
+    transition: -webkit-transform 0s .5s cubic-bezier(.19,1,.22,1);
+    transition: transform 0s .5s cubic-bezier(.19,1,.22,1);
+    transition: transform 0s .5s cubic-bezier(.19,1,.22,1), -webkit-transform 0s .5s cubic-bezier(.19,1,.22,1);
+}
+
+.tutoriel-text span{
+    position: relative;
+    display: -webkit-inline-box;
+    display: -ms-inline-flexbox;
+    display: inline-flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+}
+
+.tutoriel-text span.tutoriel-input{
+    width: 3.7vh;
+    height: 3.7vh;
+    border: 1px solid rgb(203, 107, 248);
+    margin: 3px;
+    -webkit-animation: pressed 1s infinite;
+    animation: pressed 1s infinite;
+}
+
+.tutoriel-text span.tutoriel-input-space{
+    width: 9.2vh;
+    height: 3.9vh;
+    letter-spacing: 1px;
+    border: 1px solid rgb(203, 107, 248);
+    margin: 4px;
+    -webkit-animation: pressed 1s infinite;
+    animation: pressed 1s infinite;
+}
+
+.tutoriel-text span.tutoriel-input-pointer {
+    display: inline-block;
+    width: 3.4vh;
+    height: 3.4vh;
+    margin-bottom: -0.8vh;
+    background: url("../static/images/pointer.png") center no-repeat;
+    background-size: contain;
+    -webkit-animation: pointer 2s infinite;
+    animation: pointer 2s infinite;
+}
+
+@-webkit-keyframes pointer {
+    0%,
+    50%,
+    100% {
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+    }
+    60% {
+        -webkit-transform: translate3d(0.35vh, 0, 0);
+        transform: translate3d(0.35vh, 0, 0);
+    }
+    80% {
+        -webkit-transform: translate3d(-0.35vh, 0, 0);
+        transform: translate3d(-0.35vh, 0, 0);
+    }
+}
+@keyframes pointer {
+    0%,
+    50%,
+    100% {
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+    }
+    60% {
+        -webkit-transform: translate3d(0.35vh, 0, 0);
+        transform: translate3d(0.35vh, 0, 0);
+    }
+    80% {
+        -webkit-transform: translate3d(-0.35vh, 0, 0);
+        transform: translate3d(-0.35vh, 0, 0);
+    }
+}
+
+@-webkit-keyframes pressed {
+    0%,
+    20%,
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+    30% {
+        -webkit-transform: scale(0.95);
+        transform: scale(0.95);
+    }
+}
+@keyframes pressed {
+    0%,
+    20%,
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+    30% {
+        -webkit-transform: scale(0.95);
+        transform: scale(0.95);
+    }
 }
