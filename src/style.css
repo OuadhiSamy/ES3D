@@ -49,6 +49,8 @@ body {
     align-items: center;
     background-color: #000;
     z-index: 2;
+    /* visibility: hidden;
+    opacity: 0; */
 }
 
 .progress-container {
@@ -58,18 +60,116 @@ body {
     align-items: center;
 }
 
+.site-loader-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.site-loader-progress svg {
+    height: 136px;
+    width: 136px;
+    fill: transparent;
+    -webkit-transform: rotate(
+-90deg
+);
+    transform: rotate(
+-90deg
+);
+}
+
+.site-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 2000;
+    background-color: #0e101a;
+    pointer-events: none;
+}
+
+.site-loader-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 134px;
+    width: 134px;
+    margin-top: -67px;
+    margin-left: -67px;
+}
+
+.site-loader-dog, .site-loader-sprite {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 130px;
+    width: 130px;
+    margin-left: -65px;
+}
+
+.site-loader.is-hidden .site-loader-sprite {
+    opacity: 1;
+    transition: opacity 1s cubic-bezier(.165,.84,.44,1) .2s;
+}
+
+.site-loader-dog, .site-loader-sprite {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    height: 130px;
+    width: 130px;
+    margin-left: -65px;
+}
+
+.site-loader-sprite {
+    margin-top: -70px;
+    opacity: 0;
+}
+
+.site-loader.is-hidden {
+    -webkit-transform: translateX(-100%);
+    transform: translateX(-100%);
+    transition: -webkit-transform .7s cubic-bezier(.895,.03,.685,.22);
+    transition: transform .7s cubic-bezier(.895,.03,.685,.22);
+    transition: transform .7s cubic-bezier(.895,.03,.685,.22),-webkit-transform .7s cubic-bezier(.895,.03,.685,.22);
+}
+
+.site-loader-percent {
+    z-index: 1;
+    stroke: #ff4940;
+    stroke-width: 1px;
+    stroke-dasharray: 420.973415581px;
+    stroke-dashoffset: 420.973415581px;
+}
+
+.site-loader-stroke {
+    z-index: 0;
+    stroke: hsla(0,0%,100%,.2);
+    stroke-width: 1px;
+    stroke-dasharray: 420.973415581px;
+    stroke-dashoffset: 420.973415581px;
+}
+
+.site-loader-stroke {
+    transition: stroke-dashoffset .7s cubic-bezier(.165,.84,.44,1);
+}
+
 .progress-container > .progress-bar {
-    border: 3px solid rgb(203, 107, 248);
+    border: 4px solid rgb(203, 107, 248);
     background-color: rgb(134, 134, 134);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.5s;
     border-radius: 5px;
-    box-shadow: 0 0 10px rgb(203, 107, 248);
+    box-shadow: 0 0 20px rgb(203, 107, 248);
 }
 
 .progress-container > .progress-text {
     font-size: 52px;
+    font-family: 'Ethnocentric';
     font-weight: bold;
     text-align: center;
     margin-bottom: 48px;
@@ -102,6 +202,7 @@ body {
     padding: 16px;
     font-size: 16px;
     z-index: 2;
+    text-align: center;
     transition: 0.4s ease;
     font-weight: 500;
     color: #dfffff;
@@ -185,7 +286,7 @@ select {
 #start-screen {
     position: absolute;
     font-size: 32px;
-    z-index: 3;
+    z-index: 4;
     top: 0;
     left: 0;
     width: 100%;
@@ -587,7 +688,7 @@ select {
     position: absolute;
     align-self: center;
     justify-self: center;
-    z-index: 2;
+    z-index: 1;
 }
 
 .hud-layer .crosshair img {
@@ -598,7 +699,6 @@ select {
 
 button {
     font-family: "Nunito Sans", sans-serif;
-    text-transform: uppercase;
 }
 
 @keyframes glow {
@@ -617,7 +717,6 @@ button {
     float: left;
     position: relative;
     background: none;
-    border: none;
     outline: none;
     cursor: pointer;
     margin-top: 40px;
@@ -626,10 +725,10 @@ button {
     text-align: center;
     min-width: 250px;
     padding: 8px 30px;
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 300;
     color: white;
-    letter-spacing: 0.05em;
+    text-transform: uppercase;
     text-align: center;
     border: 3px solid rgb(49, 224, 255) !important;
     transition: all 0.2s ease;
@@ -655,7 +754,7 @@ button {
     clip: rect(0px, 0px, 0px, 0px);
     background: rgba(255, 255, 255, 0.2);
     color: #000;
-    z-index: 15;
+    z-index: 10;
 }
 
 .cyber-btn#start-btn:before,
@@ -673,22 +772,20 @@ button {
     content: "Quitter";
 }
 
-#skip-btn{
-    display: block;
-    position: absolute;
-    bottom: 4rem;
-    padding: 1rem;
-    width: 100%;
+.cyber-btn#skip-btn{
+    padding: 6px 0;
+    display: inline-block;
+    position: fixed;
+    bottom: 50px;
     text-align: center;
-    color: #fff;
-    font-size: 1.8rem;
-    font-family: 'Dino','Open Sans',sans-serif;
-    text-shadow: 1px 1px 2px rgb(0 0 0 / 50%);
+    border-width: 1px !important;
+    left: 50%;
+    transform: translateX(-50%);
+    /* text-shadow: 1px 1px 2px rgb(0 0 0 / 50%); */
     cursor: pointer;
-    z-index: 15;
-    opacity: 0;
-    -webkit-transform: translate3d(0,30px,0);
-    transform: translate3d(0,30px,0);
+    z-index: 3;
+    font-size: 14px;
+    opacity: 1;
     -webkit-transition: opacity .7s 1s,-webkit-transform 1s 1s cubic-bezier(.19,1,.22,1);
     transition: opacity .7s 1s,-webkit-transform 1s 1s cubic-bezier(.19,1,.22,1);
     transition: opacity .7s 1s,transform 1s 1s cubic-bezier(.19,1,.22,1);
@@ -698,6 +795,7 @@ button {
 .cyber-btn#skip-btn:before,
 .cyber-btn#skip-btn:after {
     content: "Passer";
+    animation: none;
 }
 
 /* .cyber-btn:before,
@@ -1104,26 +1202,6 @@ button {
     }
   }
 
-#grid-bg {
-    content: "";
-    display: block;
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    background-color: black;
-    background-image: linear-gradient(rgba(224, 204, 184, .1) 1px, transparent 0), linear-gradient(90deg, rgba(224, 204, 184, .1) 1px, transparent 0);
-    background-size: 320px 320px, 320px 320px, 1280px 1280px, 1280px 1280px;
-    animation: moveX 8000ms linear infinite;
-}
-@keyframes moveX {
-    from {
-        background-position: 0px 0px, 0px 0px, 0px 0px, 0px 0px;
-   }
-    to {
-        background-position: 0px 640px, 0px 640px, 0px 640px, 0px 640px;
-   }
-}
-
 /* Video */
 
 .intro-video {
@@ -1135,7 +1213,7 @@ button {
     visibility: hidden;
     pointer-events: none;
     cursor: default;
-    z-index: 2;
+    z-index: 3;
     background: #000;
 }
 

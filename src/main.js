@@ -26,6 +26,7 @@ let isAnimationInProgress = false;
 let canAnimate = false;
 let positionScreenSpace = new THREE.Vector3();
 let threshold = 2.25;
+let loadingOverlay = document.getElementsByClassName('loading-overlay');
 let arrows = [];
 let wallMaterial = new THREE.MeshPhysicalMaterial({
   color: 0x1c1c1c,
@@ -45,6 +46,8 @@ let soundMuted = 0;
 /**
  * Loaders
  */
+
+let canInteract = false;
 
 const jsloader = document.getElementById("js-loader");
 const jsloaderinner = document.getElementById("loader");
@@ -102,11 +105,9 @@ eq.addEventListener("click", (event) => {
   if (soundMuted == 0) {
     sound.pause();
     soundMuted = 1;
-    console.log("mute");
   } else {
     sound.play();
     soundMuted = 0;
-    console.log("unmute");
   }
 });
 
@@ -118,7 +119,6 @@ const quitBtn = document.getElementById("quit-btn");
 pauseBtn.style.visibility = "hidden";
 
 pauseBtn.addEventListener("click", (event) => {
-  console.log("inpause");
   if (document.pointerLockElement === null) {
 	document.body.requestPointerLock();
 	overlayDisplay = 0;
@@ -135,7 +135,6 @@ pauseBtn.addEventListener("click", (event) => {
 });
 
 closeBtn.addEventListener("click", (event) => {
-	console.log('closebtn')
   if (document.pointerLockElement === null) {
 	document.body.requestPointerLock();
 	overlayDisplay = 0;
@@ -151,40 +150,46 @@ closeBtn.addEventListener("click", (event) => {
   }
 });
 
-quitBtn.addEventListener("click", (event) => {
-  //Code pour reset la partie
-  startDisplay = 1;
-  sound.stop();
-  sound.play();
-  startMenu.style.display = "flex";
-  pauseBtn.style.visibility = "hidden";
-  overlayDisplay = 0;
-  overlay.classList.remove('active-pause')
-});
+// quitBtn.addEventListener("click", (event) => {
+//   //Code pour reset la partie
+//   startDisplay = 1;
+//   sound.stop();
+//   sound.play();
+//   startMenu.style.display = "flex";
+//   pauseBtn.style.visibility = "hidden";
+//   overlayDisplay = 0;
+//   overlay.classList.remove('active-pause');
+//   videoContainer.style.display = 'block';
+// });
 
 //Start Menu
 const startButton = document.getElementById("start-btn");
 const startMenu = document.getElementById("start-screen");
+
 let startDisplay = 1;
 
 startButton.addEventListener("click", (event) => {
-  document.body.requestPointerLock();
-  startDisplay = 0;
-  initLoading();
+  // document.body.requestPointerLock();
   startMenu.style.display = "none";
-  pauseBtn.style.visibility = "visible";
   video.play();
   sound.stop();
+  video.currentTime = 0;
 });
 
 //Video
+const skipButton = document.getElementById("skip-btn");
+let videoContainer = document.getElementById('video-container');
+
+skipButton.addEventListener("click", (event) => {
+  video.pause();
+  VideoFinish();
+});
+
 var video = document.getElementById("video-trailer");
 
-// video.onended = function(){
-// 	let videocontainer = document.getElementsByClassName('intro-video');
-// 	videocontainer.remove();
-// 	sound.play();
-// }
+video.onended = function(){
+  VideoFinish();
+};
 
 function playVid() {
   video.play();
@@ -194,13 +199,22 @@ function pauseVid() {
   video.pause();
 }
 
+function VideoFinish(){
+  videoContainer.style.display = 'none';
+  startDisplay = 0;
+	sound.play();
+  pauseBtn.style.visibility = "visible";
+  initLoading();
+  loadingOverlay[0].opacity = 1;
+  loadingOverlay[0].visibility = 'visible';
+}
+
 //Menu Pause
 const overlay = document.getElementById("overlay");
 let overlayDisplay = 0;
 
 document.addEventListener("keydown", (event) => {
   keyStates[event.code] = true; 
-  console.log(keyStates)
 
   if (keyStates["KeyP"]) {
 	if (document.pointerLockElement === null) {
@@ -225,11 +239,9 @@ document.addEventListener("keydown", (event) => {
     if (soundMuted == 0) {
       sound.pause();
       soundMuted = 1;
-      console.log("mute");
     } else {
       sound.play();
       soundMuted = 0;
-      console.log("unmute");
     }
   }
 });
@@ -373,6 +385,9 @@ const loadingManager = new THREE.LoadingManager(
 		opacity: 0,
 	});
 	loadingTimeline.to('.tutoriel-is-visible', {
+    onComplete: () =>{
+      canInteract = true;
+    },
 		delay: 0,
 		opacity : 0,
 	});
@@ -391,8 +406,6 @@ const loadingManager = new THREE.LoadingManager(
       // Add each object to the scene, acconrding to his position set in paramMap
       // object.mesh.parent.position.copy(object.position)
       // object.mesh.position.copy(object.position)
-      // console.log(object.mesh.parent.position)
-      // console.log(object)
       // scene.add(object.mesh)
 
       // Add arrow on top of each object
@@ -471,7 +484,6 @@ function initLoading() {
 
   gltfLoader.load("machine.glb", (gltf) => {
     setUpObject(gltf);
-	console.log('café',gltf)
   });
 
   gltfLoader.load("fatboy.glb", (gltf) => {
@@ -782,7 +794,7 @@ function controls(deltaTime) {
     }
 
     if (keyStates["KeyE"]) {
-		if(tutorielEnd.opacity == 0){
+		if(canInteract){
 			console.log('ok')
 			if (closestObject && canAnimate) {
 				if (!isAnimationInProgress) {
@@ -909,7 +921,7 @@ function animate() {
     closeInsight();
   }
 
-  if (closestObject && !isAnimationInProgress && isPlayerLookingAtObject() && tutorielEnd.opacity == 0) {
+  if (closestObject && !isAnimationInProgress && isPlayerLookingAtObject() && canInteract) {
     updateInteractionButtonState(true);
     canAnimate = true;
   } else {
