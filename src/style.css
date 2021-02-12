@@ -1202,6 +1202,15 @@ button {
     }
   }
 
+  @keyframes moveX {
+    from {
+        background-position: 0px 0px, 0px 0px, 0px 0px, 0px 0px;
+   }
+    to {
+        background-position: 0px 640px, 0px 640px, 0px 640px, 0px 640px;
+   }
+}
+
 /* Video */
 
 .intro-video {
